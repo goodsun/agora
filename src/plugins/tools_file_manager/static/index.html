@@ -110,19 +110,19 @@
     <div id="placeholder">← ファイルを選んでください</div>
     <div id="filepath-bar">
       <div id="filepath" data-fullpath=""></div>
-      <button id="compress-btn" onclick="compressFile()" style="display:none">🗜 軽量化</button>
-      <button id="edit-btn" onclick="startEdit()" style="display:none">✏️ 編集</button>
-      <button id="rename-btn" onclick="startRename()">📝 リネーム</button>
+      <button id="compress-btn" onclick="compressFile()" style="display:none"><i class="fa fa-compress"></i> 軽量化</button>
+      <button id="edit-btn" onclick="startEdit()" style="display:none"><i class="fa fa-pen"></i> 編集</button>
+      <button id="rename-btn" onclick="startRename()"><i class="fa fa-i-cursor"></i> リネーム</button>
       <input id="rename-input" type="text" placeholder="新しいファイル名" onkeydown="onRenameKey(event)">
-      <button id="upload-btn" onclick="document.getElementById('upload-input').click()">⬆ アップロード</button>
+      <button id="upload-btn" onclick="document.getElementById('upload-input').click()"><i class="fa fa-upload"></i> アップロード</button>
       <input type="file" id="upload-input" style="display:none" multiple accept=".md,.json,.jpg,.jpeg,.png,.gif,.webp,.svg" onchange="uploadFiles(this)">
-      <button id="delete-btn" onclick="deleteFile()">🗑 削除</button>
+      <button id="delete-btn" onclick="deleteFile()"><i class="fa fa-trash"></i> 削除</button>
     </div>
     <div id="md-body" style="display:none"></div>
     <div id="json-body" style="display:none"><pre id="json-pre"></pre></div>
     <textarea id="edit-area" spellcheck="false" onkeydown="if(event.key==='Escape')cancelEdit()"></textarea>
     <div class="edit-bar" id="edit-bar">
-      <button class="save-btn" onclick="saveEdit()">💾 保存</button>
+      <button class="save-btn" onclick="saveEdit()"><i class="fa fa-floppy-disk"></i> 保存</button>
       <button class="cancel-btn" onclick="cancelEdit()">キャンセル</button>
       <span class="err-msg" id="edit-err"></span>
     </div>
@@ -265,7 +265,7 @@ async function openFile(idx) {
   const compBtn = document.getElementById('compress-btn');
   compBtn.style.display = f.type === 'image' ? 'block' : 'none';
   compBtn.disabled = false;
-  compBtn.textContent = '🗜 軽量化';
+  compBtn.innerHTML = '<i class="fa fa-compress"></i> 軽量化';
   const hideSpinner = () => { document.getElementById('spinner').style.display = 'none'; };
   if (f.type === 'image') {
     const img = document.getElementById('img-view');
@@ -298,14 +298,14 @@ async function compressFile() {
   if (!confirm(`画像を軽量化しますか？（上書き保存されます）\n\n${path}`)) return;
   const btn = document.getElementById('compress-btn');
   btn.disabled = true;
-  btn.textContent = '⏳ 処理中...';
+  btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 処理中...';
   const res = await fetch(`/api/file_manager/compress?path=${encodeURIComponent(path)}`, { method: 'POST' });
   const json = await res.json();
   if (res.ok) {
     const before = fmtSize(json.before);
     const after = fmtSize(json.after);
     const pct = Math.round((1 - json.after / json.before) * 100);
-    btn.textContent = `✅ ${before}→${after} (-${pct}%)`;
+    btn.innerHTML = '<i class="fa fa-check"></i> ' + before + '→' + after + ' (-' + pct + '%)';
     // allFilesのsizeを更新
     const f = allFiles.find(f => f.path === path);
     if (f) f.size = json.after;
