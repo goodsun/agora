@@ -393,8 +393,42 @@ async function generate() {
   btn.disabled = false;
 }
 
-addCastRow(); // 初期1行
+// ── localStorage 保存・復元 ──
+const LS_KEY = 'agora_image_gen_v1';
+
+function saveState() {
+  const state = {
+    rows: rows.map(r => ({ id: r.id, style: r.style })),
+    touch: document.getElementById('touch').value,
+    model: document.getElementById('model').value,
+    aspect: document.getElementById('aspect').value,
+  };
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+// ── 初期化 ──
 renderTouchPresets();
+const saved = loadState();
+if (saved && saved.rows && saved.rows.length > 0) {
+  saved.rows.forEach(r => addCastRow(r.id, r.style));
+  if (saved.touch) document.getElementById('touch').value = saved.touch;
+  if (saved.model) document.getElementById('model').value = saved.model;
+  if (saved.aspect) document.getElementById('aspect').value = saved.aspect;
+} else {
+  addCastRow(); // 初期1行
+}
+
+// 変更時に自動保存
+document.addEventListener('change', saveState);
+document.getElementById('castRows').addEventListener('click', () => setTimeout(saveState, 100));
 </script>
 </body>
 </html>`);
