@@ -103,8 +103,11 @@ app.get('/casts/:id/:file', (req, res) => {
   res.sendFile(filePath);
 });
 
+// ── image_gen: 生成画像配信（認証不要）──
+import { imageGenRouter, imageServeRouter } from './plugins/image_gen';
+app.use('/api/image_gen/img', imageServeRouter);
+
 // ── image_gen API（APIキー必須）──
-import { imageGenRouter } from './plugins/image_gen';
 app.use('/api/image_gen', requireApiKey, imageGenRouter);
 
 // ── tools: image_gen UI ──

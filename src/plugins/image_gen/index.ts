@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 
 export const imageGenRouter = Router();
+export const imageServeRouter = Router();
 
 const AGORA_ROOT = path.resolve(__dirname, '../../..');
 const CASTS_DIR = path.join(AGORA_ROOT, 'casts');
@@ -69,8 +70,8 @@ imageGenRouter.post('/generate', (req, res) => {
   });
 });
 
-// GET /agora/api/image_gen/img/:filename — 生成画像配信
-imageGenRouter.get('/img/:filename', (req, res) => {
+// GET /api/image_gen/img/:filename — 生成画像配信（認証不要）
+imageServeRouter.get('/:filename', (req, res) => {
   const filePath = path.join(OUT_DIR, path.basename(req.params.filename));
   if (!fs.existsSync(filePath)) return res.status(404).end();
   res.sendFile(filePath);
