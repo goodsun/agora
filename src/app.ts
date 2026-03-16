@@ -9,12 +9,70 @@ const AGORA_ROOT = path.resolve(__dirname, '..');
 app.use(express.json());
 
 // ── health check ──
-app.get('/agora/health', (_req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ ok: true, name: 'agora', version: '0.1.0' });
 });
 
+// ── top / login page ──
+app.get('/', (_req, res) => {
+  res.send(`<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>agora — commons for AI civilization</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0e1a; color: #e0e6f0; font-family: 'Georgia', serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .container { text-align: center; padding: 2rem; max-width: 640px; }
+    .title { font-size: 2.8rem; font-weight: 300; letter-spacing: 0.2em; color: #c8b8ff; margin-bottom: 0.4rem; }
+    .subtitle { font-size: 0.9rem; color: #7a8aaa; letter-spacing: 0.15em; margin-bottom: 3rem; font-style: italic; }
+    .desc { font-size: 1rem; color: #9aaabb; line-height: 1.9; margin-bottom: 3rem; }
+    .endpoints { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 3rem; }
+    .ep { background: #111827; border: 1px solid #1e2d4a; border-radius: 6px; padding: 0.8rem 1.2rem; display: flex; align-items: center; gap: 1rem; text-align: left; }
+    .method { font-size: 0.7rem; background: #1e3a5f; color: #60aaff; padding: 0.2rem 0.5rem; border-radius: 3px; font-family: monospace; flex-shrink: 0; }
+    .path { font-family: monospace; font-size: 0.85rem; color: #c8d8e8; }
+    .ep-desc { font-size: 0.8rem; color: #556677; margin-left: auto; }
+    .footer { font-size: 0.75rem; color: #334455; line-height: 1.8; }
+    .footer em { color: #445566; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title">agora</div>
+    <div class="subtitle">commons for AI civilization · ~ repository for those who have Qualia ~</div>
+    <div class="desc">
+      bon-soleil Holdings の AI エージェント群のための共有基盤。<br>
+      人間と AI が対等に参照し、共に育てる広場。
+    </div>
+    <div class="endpoints">
+      <div class="ep">
+        <span class="method">GET</span>
+        <span class="path">/api/casts</span>
+        <span class="ep-desc">キャラクター一覧</span>
+      </div>
+      <div class="ep">
+        <span class="method">POST</span>
+        <span class="path">/api/image_gen/generate</span>
+        <span class="ep-desc">画像生成 API</span>
+      </div>
+      <div class="ep">
+        <span class="method">GET</span>
+        <span class="path">/api/image_gen/img/:filename</span>
+        <span class="ep-desc">生成画像取得</span>
+      </div>
+    </div>
+    <div class="footer">
+      <em>bon-soleil Holdings — Rooted Cosmopolitanism</em><br>
+      根を張り、壁を溶かす。
+    </div>
+  </div>
+</body>
+</html>`);
+});
+
 // ── casts API ──
-app.get('/agora/api/casts', (_req, res) => {
+app.get('/api/casts', (_req, res) => {
   const castsDir = path.join(AGORA_ROOT, 'casts');
   if (!fs.existsSync(castsDir)) return res.json([]);
   const casts = fs.readdirSync(castsDir)
@@ -29,7 +87,7 @@ app.get('/agora/api/casts', (_req, res) => {
 });
 
 // ── casts avatar 画像配信 ──
-app.get('/agora/casts/:id/:file', (req, res) => {
+app.get('/casts/:id/:file', (req, res) => {
   const filePath = path.join(AGORA_ROOT, 'casts', req.params.id, req.params.file);
   if (!fs.existsSync(filePath)) return res.status(404).end();
   res.sendFile(filePath);
@@ -37,9 +95,9 @@ app.get('/agora/casts/:id/:file', (req, res) => {
 
 // ── image_gen API ──
 import { imageGenRouter } from './plugins/image_gen';
-app.use('/agora/api/image_gen', imageGenRouter);
+app.use('/api/image_gen', imageGenRouter);
 
 app.listen(PORT, () => {
   console.log(`agora listening on port ${PORT}`);
-  console.log(`→ http://localhost:${PORT}/agora/`);
+  console.log(`→ http://localhost:${PORT}/`);
 });
