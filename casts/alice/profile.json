@@ -38,7 +38,7 @@
     },
     "commander": {
       "description": "提督 — 黒軍服・金肩章・白スカート",
-      "image": "commander.png",
+      "image": "commander.jpg",
       "overrides": [
         "prompt_features"
       ],

@@ -56,7 +56,10 @@
   #spinner { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; flex-direction: column; gap: 16px; color: #888; font-size: 14px; pointer-events: none; z-index: 100; }
   #spinner::before { content: ''; width: 52px; height: 52px; border: 4px solid #222; border-top-color: #e94560; border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  #filepath-bar { display: none; align-items: center; gap: 10px; margin-bottom: 16px; }
+  #filepath-bar { display: none; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  #rename-input { font-size: 12px; background: #0d1117; border: 1px solid #4488cc; border-radius: 4px; color: #e0e6f0; padding: 2px 6px; display: none; font-family: monospace; min-width: 160px; outline: none; }
+  #upload-btn { padding: 4px 10px; background: #1a4a2a; border: 1px solid #2a6a3a; border-radius: 4px; color: #7ad4a0; cursor: pointer; font-size: 12px; white-space: nowrap; }
+  #upload-btn:hover { background: #1e6030; }
   #filepath { font-size: 12px; color: #666; word-break: break-all; flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 2px; }
   .crumb { color: #558; cursor: pointer; padding: 1px 4px; border-radius: 3px; transition: .15s; white-space: nowrap; }
   .crumb:hover { color: #e94560; background: #1a1030; }
@@ -103,6 +106,10 @@
       <div id="filepath"></div>
       <button id="compress-btn" onclick="compressFile()" style="display:none">🗜 軽量化</button>
       <button id="edit-btn" onclick="startEdit()" style="display:none">✏️ 編集</button>
+      <button id="rename-btn" onclick="startRename()">📝 リネーム</button>
+      <input id="rename-input" type="text" placeholder="新しいファイル名" onkeydown="onRenameKey(event)">
+      <button id="upload-btn" onclick="document.getElementById('upload-input').click()">⬆ アップロード</button>
+      <input type="file" id="upload-input" style="display:none" multiple accept=".md,.json,.jpg,.jpeg,.png,.gif,.webp,.svg" onchange="uploadFiles(this)">
       <button id="delete-btn" onclick="deleteFile()">🗑 削除</button>
     </div>
     <div id="md-body" style="display:none"></div>
@@ -379,6 +386,63 @@ async function saveEdit() {
   } else {
     errEl.style.color = '#e94560';
     errEl.textContent = '保存に失敗しました';
+  }
+}
+
+// ── リネーム ──
+function startRename() {
+  const path = document.getElementById('filepath').textContent.trim();
+  if (!path) return;
+  const input = document.getElementById('rename-input');
+  input.value = path.split('/').pop();
+  input.style.display = 'inline-block';
+  input.focus();
+  input.select();
+}
+
+async function onRenameKey(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('rename-input').style.display = 'none';
+    return;
+  }
+  if (e.key !== 'Enter') return;
+  const input = document.getElementById('rename-input');
+  const newname = input.value.trim();
+  const oldPath = document.getElementById('filepath').textContent.trim();
+  if (!newname || newname === oldPath.split('/').pop()) { input.style.display = 'none'; return; }
+  const res = await fetch(`/api/file_manager/file?path=${encodeURIComponent(oldPath)}&newname=${encodeURIComponent(newname)}`, { method: 'PATCH' });
+  const data = await res.json();
+  if (data.ok) {
+    // ファイル一覧を更新
+    const f = allFiles.find(f => f.path === oldPath);
+    if (f) { f.path = data.path; f.name = newname; }
+    input.style.display = 'none';
+    renderList();
+    renderBreadcrumb(data.path);
+  } else {
+    alert('リネーム失敗: ' + (data.error || ''));
+  }
+}
+
+// ── アップロード ──
+async function uploadFiles(input) {
+  const dir = document.getElementById('filepath').textContent.trim().split('/').slice(0, -1).join('/') || '/srv/agora';
+  const files = Array.from(input.files);
+  let uploaded = 0;
+  for (const file of files) {
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch(`/api/file_manager/upload?dir=${encodeURIComponent(dir)}`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.ok) {
+      allFiles.push({ path: data.path, name: data.name, type: data.type, dir, mtime: Date.now()/1000, ctime: Date.now()/1000, size: file.size, mime: file.type });
+      uploaded++;
+    }
+  }
+  input.value = '';
+  if (uploaded > 0) {
+    renderList();
+    alert(`✅ ${uploaded}件アップロードしました`);
   }
 }
 

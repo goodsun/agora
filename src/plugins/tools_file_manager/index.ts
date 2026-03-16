@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 import path from 'path';
 import fs from 'fs';
 import sharp from 'sharp';
+import multer from 'multer';
 
 export const fileManagerRouter = Router();  // /api/file_manager/
 export const fileManagerUIRouter = Router(); // /tools/file_manager/
@@ -96,6 +97,50 @@ fileManagerRouter.put('/file', express.text({ type: '*/*', limit: '10mb' }), (re
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// API: PATCH /api/file_manager/file — リネーム
+fileManagerRouter.patch('/file', (req, res) => {
+  const p = String(req.query.path || '');
+  const newname = String(req.query.newname || '').replace(/[/\\]/g, '');
+  if (!p || !newname) return res.status(400).json({ error: 'path and newname required' });
+  if (!fs.existsSync(p) || !fs.statSync(p).isFile()) return res.status(404).end();
+  try { if (!isSafePath(p)) return res.status(403).end(); } catch { return res.status(403).end(); }
+  const newPath = path.join(path.dirname(p), newname);
+  const ext = path.extname(newname).toLowerCase();
+  if (!ALLOWED_EXTS.has(ext)) return res.status(403).json({ error: 'extension not allowed' });
+  if (fs.existsSync(newPath)) return res.status(409).json({ error: 'already exists' });
+  fs.renameSync(p, newPath);
+  res.json({ ok: true, path: newPath });
+});
+
+// API: POST /api/file_manager/upload — アップロード
+const uploadMiddleware = multer({
+  storage: multer.diskStorage({
+    destination: (req, _file, cb) => {
+      const dir = String(req.query.dir || '');
+      if (!dir || !fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) return cb(new Error('invalid dir'), '');
+      try {
+        const real = fs.realpathSync.native(dir);
+        const ok = SEARCH_ROOTS.some(r => { try { return real.startsWith(fs.realpathSync.native(r)); } catch { return false; } });
+        if (!ok) return cb(new Error('forbidden'), '');
+      } catch { return cb(new Error('forbidden'), ''); }
+      cb(null, dir);
+    },
+    filename: (_req, file, cb) => cb(null, file.originalname),
+  }),
+  limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, ALLOWED_EXTS.has(ext));
+  }
+});
+
+fileManagerRouter.post('/upload', uploadMiddleware.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'no file or not allowed type' });
+  const ext = path.extname(req.file.filename).toLowerCase();
+  const type = IMAGE_EXTS.has(ext) ? 'image' : JSON_EXTS.has(ext) ? 'json' : 'md';
+  res.json({ ok: true, path: req.file.path, name: req.file.filename, type });
 });
 
 // API: DELETE /api/file_manager/file
