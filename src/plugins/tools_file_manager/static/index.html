@@ -232,6 +232,7 @@ function renderList() {
 }
 
 function openByFilteredIdx(i) {
+  if (_isEditing) return;
   currentIdx = i;
   const items = document.querySelectorAll('.file-item');
   if (activeItem) activeItem.classList.remove('active');
@@ -336,8 +337,12 @@ async function deleteFile() {
 
 // ── 編集機能 ──
 let _editOriginal = '';
+let _isEditing = false;
 
 function startEdit() {
+  _isEditing = true;
+  document.getElementById('file-list').style.pointerEvents = 'none';
+  document.getElementById('file-list').style.opacity = '0.4';
   const pre = document.getElementById('json-pre');
   const mdBody = document.getElementById('md-body');
   const area = document.getElementById('edit-area');
@@ -355,6 +360,9 @@ function startEdit() {
 }
 
 function cancelEdit() {
+  _isEditing = false;
+  document.getElementById('file-list').style.pointerEvents = '';
+  document.getElementById('file-list').style.opacity = '';
   document.getElementById('edit-area').style.display = 'none';
   document.getElementById('edit-bar').style.display = 'none';
   document.getElementById('edit-btn').style.display = 'block';
