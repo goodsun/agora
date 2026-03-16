@@ -10,7 +10,7 @@ const AGORA_ROOT = path.resolve(__dirname, '../../..');
 const CASTS_DIR = path.join(AGORA_ROOT, 'casts');
 const GEN_SCRIPT = path.join(__dirname, 'gen.js');
 const OUT_DIR = process.env.AGORA_GEN_OUT || path.join(AGORA_ROOT, 'generated');
-const KEEP_HOURS = parseInt(process.env.AGORA_GEN_KEEP_HOURS || '72'); // デフォルト3日
+const KEEP_HOURS = parseInt(process.env.AGORA_GEN_KEEP_HOURS || "336"); // デフォルト2週間
 
 // 出力ディレクトリを確保
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
