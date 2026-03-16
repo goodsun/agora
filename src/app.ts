@@ -125,7 +125,7 @@ app.get('/api/casts', (_req, res) => {
 
 // ── casts avatar 画像配信 ──
 app.get('/casts/:id/:file', (req, res) => {
-  const filePath = path.join(AGORA_ROOT, 'data', 'casts', req.params.id, req.params.file);
+  const filePath = path.join('/srv/shared/metroon/data/casts', req.params.id, req.params.file);
   if (!fs.existsSync(filePath)) return res.status(404).end();
   res.sendFile(filePath);
 });
