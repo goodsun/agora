@@ -91,7 +91,7 @@ app.get('/', (_req, res) => {
       <div class="ep">
         <span class="method">POST</span>
         <span class="path">/api/image_gen/generate</span>
-        <span class="ep-desc">画像生成 🔑</span>
+        <span class="ep-desc">画像生成 <i class="fa fa-key" style="font-size:.75em;color:#445566"></i></span>
       </div>
       <div class="ep">
         <span class="method">GET</span>
