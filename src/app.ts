@@ -110,7 +110,7 @@ app.get('/', (_req, res) => {
 
 // ── casts API ──
 app.get('/api/casts', (_req, res) => {
-  const castsDir = path.join(AGORA_ROOT, 'data', 'casts');
+  const castsDir = '/srv/shared/agora/data/casts';
   if (!fs.existsSync(castsDir)) return res.json([]);
   const casts = fs.readdirSync(castsDir)
     .filter(d => fs.statSync(path.join(castsDir, d)).isDirectory())

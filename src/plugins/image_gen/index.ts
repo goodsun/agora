@@ -8,11 +8,11 @@ export const imageGenRouter = Router();
 export const imageServeRouter = Router();
 
 const AGORA_ROOT = path.resolve(__dirname, '../../..');
-const CASTS_DIR = path.join(AGORA_ROOT, 'data', 'casts');
+const CASTS_DIR = '/srv/shared/agora/data/casts';
 const GEN_SCRIPT = path.join(__dirname, 'gen.js');
 const OUT_DIR = process.env.AGORA_GEN_OUT || path.join(AGORA_ROOT, 'generated');
 const KEEP_HOURS = parseInt(process.env.AGORA_GEN_KEEP_HOURS || "336"); // デフォルト2週間
-const SCENES_DIR = path.join(AGORA_ROOT, 'data/uploads/scenes');
+const SCENES_DIR = '/srv/shared/agora/data/uploads/scenes';
 if (!fs.existsSync(SCENES_DIR)) fs.mkdirSync(SCENES_DIR, { recursive: true });
 
 // 出力ディレクトリを確保
