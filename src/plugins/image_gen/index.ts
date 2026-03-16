@@ -9,10 +9,28 @@ export const imageServeRouter = Router();
 const AGORA_ROOT = path.resolve(__dirname, '../../..');
 const CASTS_DIR = path.join(AGORA_ROOT, 'casts');
 const GEN_SCRIPT = path.join(__dirname, 'gen.js');
-const OUT_DIR = process.env.AGORA_GEN_OUT || '/tmp/agora_gen';
+const OUT_DIR = process.env.AGORA_GEN_OUT || path.join(AGORA_ROOT, 'generated');
+const KEEP_HOURS = parseInt(process.env.AGORA_GEN_KEEP_HOURS || '72'); // デフォルト3日
 
 // 出力ディレクトリを確保
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
+
+// 定期クリーンアップ（1時間おき）
+function cleanupOldFiles() {
+  const cutoff = Date.now() - KEEP_HOURS * 60 * 60 * 1000;
+  try {
+    const files = fs.readdirSync(OUT_DIR);
+    let deleted = 0;
+    for (const f of files) {
+      const fp = path.join(OUT_DIR, f);
+      const stat = fs.statSync(fp);
+      if (stat.mtimeMs < cutoff) { fs.unlinkSync(fp); deleted++; }
+    }
+    if (deleted > 0) console.log(`[image_gen] cleanup: ${deleted} files deleted (older than ${KEEP_HOURS}h)`);
+  } catch {}
+}
+cleanupOldFiles();
+setInterval(cleanupOldFiles, 60 * 60 * 1000);
 
 function getGeminiKey(): string {
   // .env or 環境変数から取得
