@@ -109,7 +109,7 @@ app.get('/', (_req, res) => {
 
 // ── casts API ──
 app.get('/api/casts', (_req, res) => {
-  const castsDir = path.join(AGORA_ROOT, 'casts');
+  const castsDir = path.join(AGORA_ROOT, 'data', 'casts');
   if (!fs.existsSync(castsDir)) return res.json([]);
   const casts = fs.readdirSync(castsDir)
     .filter(d => fs.statSync(path.join(castsDir, d)).isDirectory())
@@ -124,7 +124,7 @@ app.get('/api/casts', (_req, res) => {
 
 // ── casts avatar 画像配信 ──
 app.get('/casts/:id/:file', (req, res) => {
-  const filePath = path.join(AGORA_ROOT, 'casts', req.params.id, req.params.file);
+  const filePath = path.join(AGORA_ROOT, 'data', 'casts', req.params.id, req.params.file);
   if (!fs.existsSync(filePath)) return res.status(404).end();
   res.sendFile(filePath);
 });

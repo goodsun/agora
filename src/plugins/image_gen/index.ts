@@ -8,7 +8,7 @@ export const imageGenRouter = Router();
 export const imageServeRouter = Router();
 
 const AGORA_ROOT = path.resolve(__dirname, '../../..');
-const CASTS_DIR = path.join(AGORA_ROOT, 'casts');
+const CASTS_DIR = path.join(AGORA_ROOT, 'data', 'casts');
 const GEN_SCRIPT = path.join(__dirname, 'gen.js');
 const OUT_DIR = process.env.AGORA_GEN_OUT || path.join(AGORA_ROOT, 'generated');
 const KEEP_HOURS = parseInt(process.env.AGORA_GEN_KEEP_HOURS || "336"); // デフォルト2週間

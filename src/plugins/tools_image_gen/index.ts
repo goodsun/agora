@@ -5,7 +5,7 @@ import fs from 'fs';
 export const toolsImageGenRouter = Router();
 
 const AGORA_ROOT = path.resolve(__dirname, '../../..');
-const CASTS_DIR = path.join(AGORA_ROOT, 'casts');
+const CASTS_DIR = path.join(AGORA_ROOT, 'data', 'casts');
 
 function loadTouchPresets() {
   try {
