@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { execFile } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import multer from 'multer';
 
 export const imageGenRouter = Router();
 export const imageServeRouter = Router();
@@ -32,6 +33,28 @@ function cleanupOldFiles() {
 cleanupOldFiles();
 setInterval(cleanupOldFiles, 60 * 60 * 1000);
 
+// 背景アップロード用multer
+const bgUpload = multer({
+  storage: multer.diskStorage({
+    destination: OUT_DIR,
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+      cb(null, `bg_${Date.now()}${ext}`);
+    }
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (_req, file, cb) => {
+    const ok = /^image\/(jpeg|png|webp|gif)$/.test(file.mimetype);
+    cb(null, ok);
+  }
+});
+
+// POST /api/image_gen/upload_bg — 背景画像アップロード（APIキー必須）
+imageGenRouter.post('/upload_bg', bgUpload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'no file' });
+  res.json({ ok: true, filename: req.file.filename });
+});
+
 function getGeminiKey(): string {
   // .env or 環境変数から取得
   const envFile = path.join(AGORA_ROOT, '.env');
@@ -46,7 +69,7 @@ function getGeminiKey(): string {
 // body: { prompt, cast_refs?, gen_model?, gen_aspect? }
 // cast_refs: [{id, style, label}]
 imageGenRouter.post('/generate', (req, res) => {
-  const { prompt, cast_refs, gen_model, gen_aspect } = req.body;
+  const { prompt, cast_refs, gen_model, gen_aspect, bg_filename: bg_fn } = req.body;
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
   const apiKey = getGeminiKey();
@@ -54,6 +77,14 @@ imageGenRouter.post('/generate', (req, res) => {
 
   // cast_refs → refs配列を組み立て
   let refsArr: Array<{path: string, label: string}> = [];
+
+  // 背景画像をrefの先頭に追加
+  const bg_filename = bg_fn ? String(bg_fn) : '';
+  if (bg_filename) {
+    const bgPath = path.join(OUT_DIR, path.basename(bg_filename));
+    if (fs.existsSync(bgPath)) refsArr.push({ path: bgPath, label: 'BG' });
+  }
+
   if (cast_refs && Array.isArray(cast_refs)) {
     for (const cr of cast_refs) {
       if (!cr.id) continue;
