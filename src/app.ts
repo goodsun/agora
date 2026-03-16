@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
@@ -7,6 +8,15 @@ const PORT = process.env.AGORA_PORT || 8810;
 const AGORA_ROOT = path.resolve(__dirname, '..');
 
 app.use(express.json());
+
+// ── API Key 認証ミドルウェア ──
+function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const key = req.headers['x-api-key'];
+  const validKey = process.env.AGORA_API_KEY;
+  if (!validKey) return res.status(500).json({ error: 'server_misconfigured', message: 'AGORA_API_KEY not set' });
+  if (key === validKey) return next();
+  res.status(401).json({ error: 'unauthorized', message: 'X-API-Key header required' });
+}
 
 // ── health check ──
 app.get('/health', (_req, res) => {
@@ -93,9 +103,9 @@ app.get('/casts/:id/:file', (req, res) => {
   res.sendFile(filePath);
 });
 
-// ── image_gen API ──
+// ── image_gen API（APIキー必須）──
 import { imageGenRouter } from './plugins/image_gen';
-app.use('/api/image_gen', imageGenRouter);
+app.use('/api/image_gen', requireApiKey, imageGenRouter);
 
 app.listen(PORT, () => {
   console.log(`agora listening on port ${PORT}`);
