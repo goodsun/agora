@@ -30,6 +30,13 @@
   .badge-json { background: #1a4a7a; color: #7ad4ff; }
   #json-body { display:none; background: #0d1117; border-radius: 6px; padding: 16px; overflow-x: auto; }
   #json-body pre { font-family: monospace; font-size: 0.88em; line-height: 1.6; color: #c8e0f0; white-space: pre-wrap; word-break: break-all; }
+  #edit-area { display:none; width:100%; min-height:300px; background:#0d1117; border:1px solid #1a4a7a; border-radius:6px; color:#c8e0f0; font-family:monospace; font-size:0.85em; padding:12px; resize:vertical; outline:none; line-height:1.6; }
+  #edit-area:focus { border-color:#4488cc; }
+  .edit-bar { display:none; gap:.5rem; margin-top:.75rem; align-items:center; }
+  .edit-bar .save-btn { padding:.4rem 1rem; background:#1a6b3c; border:none; border-radius:5px; color:#fff; cursor:pointer; font-size:.85rem; }
+  .edit-bar .save-btn:hover { background:#27ae60; }
+  .edit-bar .cancel-btn { padding:.4rem 1rem; background:#1a2a4a; border:1px solid #1e2d4a; border-radius:5px; color:#aaa; cursor:pointer; font-size:.85rem; }
+  .edit-bar .err-msg { font-size:.78rem; color:#e94560; flex:1; }
   .badge-dup { background: #7a5c00; color: #ffd966; }
   #divider { width: 5px; background: #222; cursor: col-resize; flex-shrink: 0; transition: background 0.1s; }
   #divider:hover, #divider.dragging { background: #e94560; }
@@ -55,6 +62,8 @@
   .crumb:hover { color: #e94560; background: #1a1030; }
   .crumb-sep { color: #333; padding: 0 1px; }
   .crumb-file { color: #889; cursor: default; }
+  #edit-btn { padding: 5px 14px; background: #1a4a6a; color: #7ad4ff; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; white-space: nowrap; display: none; }
+  #edit-btn:hover { background: #1e5a8a; }
   #delete-btn { padding: 5px 14px; background: #c0392b; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; white-space: nowrap; }
   #delete-btn:hover { background: #e74c3c; }
   #compress-btn { padding: 5px 14px; background: #1a6b3c; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; white-space: nowrap; }
@@ -93,10 +102,17 @@
     <div id="filepath-bar">
       <div id="filepath"></div>
       <button id="compress-btn" onclick="compressFile()" style="display:none">🗜 軽量化</button>
+      <button id="edit-btn" onclick="startEdit()" style="display:none">✏️ 編集</button>
       <button id="delete-btn" onclick="deleteFile()">🗑 削除</button>
     </div>
     <div id="md-body" style="display:none"></div>
     <div id="json-body" style="display:none"><pre id="json-pre"></pre></div>
+    <textarea id="edit-area" spellcheck="false"></textarea>
+    <div class="edit-bar" id="edit-bar">
+      <button class="save-btn" onclick="saveEdit()">💾 保存</button>
+      <button class="cancel-btn" onclick="cancelEdit()">キャンセル</button>
+      <span class="err-msg" id="edit-err"></span>
+    </div>
     <img id="img-view" style="display:none">
   </div>
 </div>
@@ -225,6 +241,9 @@ async function openFile(idx) {
   document.getElementById('md-body').style.display = 'none';
   document.getElementById('json-body').style.display = 'none';
   document.getElementById('img-view').style.display = 'none';
+  document.getElementById('edit-area').style.display = 'none';
+  document.getElementById('edit-bar').style.display = 'none';
+  document.getElementById('edit-btn').style.display = (f.type === 'json' || f.type === 'md') ? 'block' : 'none';
   const compBtn = document.getElementById('compress-btn');
   compBtn.style.display = f.type === 'image' ? 'block' : 'none';
   compBtn.disabled = false;
@@ -301,6 +320,63 @@ async function deleteFile() {
     }
   } else {
     alert('削除に失敗しました');
+  }
+}
+
+// ── 編集機能 ──
+let _editOriginal = '';
+
+function startEdit() {
+  const pre = document.getElementById('json-pre');
+  const mdBody = document.getElementById('md-body');
+  const area = document.getElementById('edit-area');
+  const bar = document.getElementById('edit-bar');
+  const content = pre.style.display !== 'none' ? pre.textContent : mdBody.innerText;
+  _editOriginal = content;
+  area.value = content;
+  area.style.display = 'block';
+  bar.style.display = 'flex';
+  document.getElementById('json-body').style.display = 'none';
+  document.getElementById('md-body').style.display = 'none';
+  document.getElementById('edit-btn').style.display = 'none';
+  document.getElementById('edit-err').textContent = '';
+  area.focus();
+}
+
+function cancelEdit() {
+  document.getElementById('edit-area').style.display = 'none';
+  document.getElementById('edit-bar').style.display = 'none';
+  document.getElementById('edit-btn').style.display = 'block';
+  // 表示を戻す
+  const f = filteredFiles[currentIdx];
+  if (f) openFile(currentIdx);
+}
+
+async function saveEdit() {
+  const path = document.getElementById('filepath').textContent;
+  const area = document.getElementById('edit-area');
+  const errEl = document.getElementById('edit-err');
+  const content = area.value;
+  errEl.textContent = '';
+  // JSONの場合はバリデーション
+  if (path.endsWith('.json')) {
+    try { JSON.parse(content); } catch(e) {
+      errEl.textContent = '⚠ JSON構文エラー: ' + e.message;
+      return;
+    }
+  }
+  const res = await fetch(`/api/file_manager/file?path=${encodeURIComponent(path)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'text/plain' },
+    body: content,
+  });
+  if (res.ok) {
+    errEl.style.color = '#27ae60';
+    errEl.textContent = '✅ 保存しました';
+    setTimeout(() => { cancelEdit(); }, 800);
+  } else {
+    errEl.style.color = '#e94560';
+    errEl.textContent = '保存に失敗しました';
   }
 }
 

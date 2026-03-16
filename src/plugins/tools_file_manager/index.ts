@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import path from 'path';
 import fs from 'fs';
 import sharp from 'sharp';
@@ -81,6 +81,21 @@ fileManagerRouter.get('/file', (req, res) => {
   }
   const text = fs.readFileSync(p, 'utf-8');
   res.type('text/plain; charset=utf-8').send(text);
+});
+
+// API: PUT /api/file_manager/file — ファイル上書き保存（md/json のみ）
+fileManagerRouter.put('/file', express.text({ type: '*/*', limit: '10mb' }), (req, res) => {
+  const p = String(req.query.path || '');
+  if (!p || !fs.existsSync(p) || !fs.statSync(p).isFile()) return res.status(404).end();
+  try { if (!isSafePath(p)) return res.status(403).end(); } catch { return res.status(403).end(); }
+  const ext = path.extname(p).toLowerCase();
+  if (![...MD_EXTS, ...JSON_EXTS].includes(ext)) return res.status(403).json({ error: 'not editable' });
+  try {
+    fs.writeFileSync(p, req.body, 'utf-8');
+    res.json({ ok: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // API: DELETE /api/file_manager/file
