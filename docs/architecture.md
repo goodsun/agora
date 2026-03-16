@@ -5,8 +5,18 @@
 agora は bon-soleil Holdings の全AIエージェントが共有する基盤プラットフォームです。  
 Hetzner (alice-hetzner) 上で稼働し、公開URLまたはTailscale経由でアクセスできます。
 
-**設計思想**: システム（コード）とデータを完全分離。  
-`/srv/agora/` はシステム、`/srv/shared/` は共有データ。
+### 命名と設計思想
+
+古代アテネの都市構造をそのままインフラに：
+
+| 名称 | 場所 | 役割 |
+|---|---|---|
+| **agora** | `/srv/agora/` | 広場。人とAIが集まるシステム・ツール群 |
+| **metroon** | `/srv/shared/metroon/` | 公文書館。記録・データ・共有リソース |
+| **base_ws** | `/srv/shared/base_ws/` | 現フェーズの個人ワークスペース基盤（原本） |
+| **initial** | `/srv/shared/initial/` | 新エージェント初期設定テンプレート |
+
+**システムとデータの完全分離**: `/srv/agora/` はコード、データは `/srv/shared/metroon/` へ。
 
 ---
 
@@ -41,29 +51,32 @@ Node.js / Express (port 8810)
 │       └── tools_file_manager/
 │           ├── index.ts            ← ファイルマネージャーAPI
 │           └── static/index.html   ← ファイルマネージャーUI
+├── docs/                           ← ドキュメント（git管理）
+├── proposals/                      ← 提案書（git管理）
 ├── generated/                      ← 生成画像（2週間保持、.gitignore）
-├── proposals/                      ← 提案書
 ├── .env                            ← 環境変数（.gitignore）
 └── package.json
 ```
 
-### 共有データ
+### 共有領域
 
 ```
 /srv/shared/
-├── base_ws/                        ← 原本ワークスペース（スキル等、直接編集しない）
-└── agora/
-    └── data/                       ← agoraが管理する共有データ
-        ├── casts/                  ← キャラクター定義（全エージェント共有）
-        │   ├── alice/
-        │   │   ├── profile.json
-        │   │   └── *.jpg
-        │   ├── teddy/ mephi/ akiko/ ...
-        ├── docs/                   ← ドキュメント（このファイル）
-        ├── image_gen/
-        │   └── touch_presets.json  ← 画風プリセット
-        └── uploads/
-            └── scenes/             ← 背景シーン画像（永続保存）
+├── base_ws/                        ← 現フェーズの個人WS基盤（原本、直接編集しない）
+├── initial/                        ← 新エージェント初期設定テンプレート
+└── metroon/                        ← 公文書館（agora管理の共有リソース）
+    ├── data/                       ← 共有データ（file_managerで閲覧・編集可）
+    │   ├── casts/                  ← キャラクター定義（全エージェント共有）
+    │   │   ├── alice/
+    │   │   │   ├── profile.json
+    │   │   │   └── *.jpg
+    │   │   ├── teddy/ mephi/ akiko/ ...
+    │   ├── image_gen/
+    │   │   └── touch_presets.json  ← 画風プリセット
+    │   └── uploads/
+    │       └── scenes/             ← 背景シーン画像（永続保存）
+    ├── skills/                     ← 共有スキル
+    └── scripts/                    ← 共有スクリプト
 ```
 
 ---
@@ -83,7 +96,7 @@ Node.js / Express (port 8810)
 /api/image_gen/scenes    ← 背景シーン一覧（認証不要）
 /api/image_gen/scene/:f  ← 背景シーン配信（認証不要）
 
-/api/file_manager/files  ← ファイル一覧（認証なし・Phase1）
+/api/file_manager/files  ← ファイル一覧（認証なし・Phase 1）
 /api/file_manager/file   ← ファイル取得/保存/削除/リネーム
 /api/file_manager/upload ← ファイルアップロード
 /api/file_manager/compress ← 画像軽量化
@@ -101,8 +114,8 @@ Node.js / Express (port 8810)
 | `AGORA_PORT` | リッスンポート（デフォルト: 8810） |
 | `AGORA_API_KEY` | 画像生成APIキー |
 | `GEMINI_API_KEY` | Gemini API キー |
-| `FILE_MANAGER_ROOTS` | ファイルマネージャーのルートディレクトリ（カンマ区切り） |
-| `AGORA_GEN_OUT` | 生成画像出力先（デフォルト: /srv/agora/generated） |
+| `FILE_MANAGER_ROOTS` | file_managerのルートディレクトリ（デフォルト: `/srv/shared/metroon/data`） |
+| `AGORA_GEN_OUT` | 生成画像出力先（デフォルト: `/srv/agora/generated`） |
 | `AGORA_GEN_KEEP_HOURS` | 生成画像保持時間（デフォルト: 336 = 2週間） |
 
 ---
@@ -129,9 +142,6 @@ journalctl -u agora -f
 
 # 再起動
 sudo systemctl restart agora
-
-# 生成画像の手動クリーンアップ
-find /srv/agora/generated -mtime +14 -delete
 ```
 
 ---
