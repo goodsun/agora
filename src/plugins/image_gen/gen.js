@@ -51,7 +51,6 @@ async function genWithRefs(refList) {
     contents: [{ parts }],
     generationConfig: {
       responseModalities: ['image', 'text'],
-      ...(aspect && aspect !== '1:1' ? { mediaResolution: 'MEDIA_RESOLUTION_MEDIUM' } : {}),
     }
   };
   // aspect ratioをGemini generate_content APIで指定する場合はプロンプトに含めるのが現状の方法
@@ -76,7 +75,7 @@ async function genImagen() {
 }
 
 async function run() {
-  const useGemini = refs.length > 0 || (modelArg && modelArg.startsWith('gemini'));
+  const useGemini = (refs.length > 0 || (modelArg && modelArg.startsWith('gemini'))) && modelArg !== 'imagen-4.0-fast-generate-001';
   if (useGemini) {
     await genWithRefs(refs);
   } else {
