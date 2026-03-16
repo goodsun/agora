@@ -287,7 +287,7 @@ function renderRows() {
         </select>
         <select onchange="onStyleChange(\${r.rowId},this.value)">\${styleOpts}</select>
       </div>
-      <img id="thumb_\${r.rowId}" src="\${imgUrl}" class="cast-thumb" style="\${imgUrl?'':'display:none'}" loading="lazy" onclick="openModal('\${imgUrl}')" title="クリックで拡大">
+      <img id="thumb_\${r.rowId}" src="\${imgUrl}" class="cast-thumb" style="\${imgUrl?'':'display:none'}" loading="lazy" onclick="openModal(this.src)" title="クリックで拡大">
       <div class="cast-thumb-empty" style="\${imgUrl?'display:none':''}">👤</div>
       <button class="cast-rm" onclick="removeRow(\${r.rowId})"><i class="fa fa-xmark"></i></button>
     </div>\`;
