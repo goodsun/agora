@@ -5,7 +5,7 @@ import fs from 'fs';
 export const toolsImageGenRouter = Router();
 
 const AGORA_ROOT = path.resolve(__dirname, '../../..');
-const CASTS_DIR = '/srv/shared/agora/data/casts';
+const CASTS_DIR = '/srv/shared/metroon/data/casts';
 
 function loadTouchPresets() {
   try {
