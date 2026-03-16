@@ -25,7 +25,14 @@ async function genWithRefs(refList) {
   const model = modelArg || 'gemini-3-pro-image-preview';
   console.log('using model:', model, 'refs:', refList.length);
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey;
-  const aspectPrompt = aspect !== '1:1' ? ', aspect ratio ' + aspect : '';
+  const ASPECT_INSTRUCTIONS = {
+    '1:1':  '',
+    '9:16': 'IMPORTANT: Output must be a vertical portrait image with 9:16 aspect ratio (tall, like a smartphone screen). Width must be narrower than height.',
+    '16:9': 'IMPORTANT: Output must be a horizontal landscape image with 16:9 aspect ratio (wide, like a cinema screen). Width must be wider than height.',
+    '4:3':  'IMPORTANT: Output must be a horizontal image with 4:3 aspect ratio (standard landscape). Width must be wider than height.',
+    '3:4':  'IMPORTANT: Output must be a vertical portrait image with 3:4 aspect ratio. Height must be taller than width.',
+  };
+  const aspectPrompt = ASPECT_INSTRUCTIONS[aspect] || '';
   const parts = [];
   for (const ref of refList) {
     const mimeType = ref.path.endsWith('.png') ? 'image/png' : 'image/jpeg';
@@ -37,11 +44,18 @@ async function genWithRefs(refList) {
       parts.push({ text: '[This is character ' + ref.label + ']' });
     }
   }
-  parts.push({ text: prompt + aspectPrompt + '. Use the reference images as character design bases. Maintain each character visual style.' });
+  const refNote = refList.length > 0 ? ' Use the reference images as character design bases. Maintain each character visual style.' : '';
+  const fullPrompt = [prompt, refNote, aspectPrompt].filter(Boolean).join(' ');
+  parts.push({ text: fullPrompt });
   const payload = {
     contents: [{ parts }],
-    generationConfig: { responseModalities: ['image', 'text'] }
+    generationConfig: {
+      responseModalities: ['image', 'text'],
+      ...(aspect && aspect !== '1:1' ? { mediaResolution: 'MEDIA_RESOLUTION_MEDIUM' } : {}),
+    }
   };
+  // aspect ratioをGemini generate_content APIで指定する場合はプロンプトに含めるのが現状の方法
+  // (generationConfig.aspectRatio は imagen系のみサポート)
   const data = await httpsPost(url, payload);
   if (data.error) { console.error(JSON.stringify(data.error)); process.exit(1); }
   const resParts = data.candidates?.[0]?.content?.parts ?? [];
@@ -62,7 +76,8 @@ async function genImagen() {
 }
 
 async function run() {
-  if (refs.length > 0) {
+  const useGemini = refs.length > 0 || (modelArg && modelArg.startsWith('gemini'));
+  if (useGemini) {
     await genWithRefs(refs);
   } else {
     await genImagen();

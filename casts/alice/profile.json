@@ -44,6 +44,14 @@
       ],
       "prompt_features_override": null
     },
+    "nurse": {
+      "description": "ナース版",
+      "image": "darknurse.jpg",
+      "overrides": [
+        "prompt_features"
+      ],
+      "prompt_features_override": null
+    },
     "admiral": {
       "description": "提督 — 黒軍服",
       "image": "admiral.jpg",
