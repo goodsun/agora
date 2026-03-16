@@ -43,6 +43,9 @@
   #md-body a { color: #58a6ff; }
   #md-body hr { border-color: #333; margin: 1.5em 0; }
   #placeholder { text-align: center; color: #444; margin-top: 20vh; font-size: 18px; }
+  #spinner { display: none; text-align: center; margin-top: 20vh; color: #555; font-size: 14px; }
+  #spinner::before { content: ''; display: block; width: 36px; height: 36px; border: 3px solid #333; border-top-color: #e94560; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   #filepath-bar { display: none; align-items: center; gap: 10px; margin-bottom: 16px; }
   #filepath { font-size: 12px; color: #666; word-break: break-all; flex: 1; }
   #delete-btn { padding: 5px 14px; background: #c0392b; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; white-space: nowrap; }
@@ -78,6 +81,7 @@
 <div id="main">
   <div id="content">
     <div id="placeholder">← ファイルを選んでください</div>
+    <div id="spinner">読み込み中...</div>
     <div id="filepath-bar">
       <div id="filepath"></div>
       <button id="compress-btn" onclick="compressFile()" style="display:none">🗜 軽量化</button>
@@ -179,20 +183,26 @@ async function openFile(idx) {
   document.getElementById('placeholder').style.display = 'none';
   document.getElementById('filepath-bar').style.display = 'flex';
   document.getElementById('filepath').textContent = f.path;
+  document.getElementById('spinner').style.display = 'block';
   document.getElementById('md-body').style.display = 'none';
   document.getElementById('img-view').style.display = 'none';
   const compBtn = document.getElementById('compress-btn');
   compBtn.style.display = f.type === 'image' ? 'block' : 'none';
   compBtn.disabled = false;
   compBtn.textContent = '🗜 軽量化';
+  const hideSpinner = () => { document.getElementById('spinner').style.display = 'none'; };
   if (f.type === 'image') {
-    document.getElementById('img-view').src = `/api/file_manager/file?path=${encodeURIComponent(f.path)}`;
-    document.getElementById('img-view').style.display = 'block';
+    const img = document.getElementById('img-view');
+    img.onload = hideSpinner;
+    img.onerror = hideSpinner;
+    img.src = `/api/file_manager/file?path=${encodeURIComponent(f.path)}`;
+    img.style.display = 'block';
   } else {
     const res = await fetch(`/api/file_manager/file?path=${encodeURIComponent(f.path)}`);
     const text = await res.text();
     document.getElementById('md-body').innerHTML = marked.parse(text);
     document.getElementById('md-body').style.display = 'block';
+    hideSpinner();
   }
 }
 
