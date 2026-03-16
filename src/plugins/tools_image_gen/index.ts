@@ -183,6 +183,7 @@ toolsImageGenRouter.get('/', (_req, res) => {
             <select id="model">
               <option value="gemini-3-pro-image-preview">gemini-3-pro (高品質)</option>
               <option value="gemini-2.5-flash-image" selected>gemini-2.5-flash (速い)</option>
+              <option value="imagen-4.0-fast-generate-001">Imagen 4 Fast (アスペクト比確実)</option>
             </select>
           </div>
           <div>
