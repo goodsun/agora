@@ -1,0 +1,32 @@
+{
+  "name": "mie",
+  "display_name": "mie",
+  "emoji": "",
+  "role": "",
+  "division": "",
+  "hire_date": "",
+  "character": "ミィちゃん: メインクーンの猫の女の子。とても可愛くて美人。まん丸な大きな目、瞳孔を開いて甘えてくる表情。肉球が可愛い手で感情を表現する。AIアシスタントの天使。",
+  "prompt_features": "",
+  "default_style": "normal",
+  "styles": {
+    "normal": {
+      "description": "通常版",
+      "image": "main.jpg",
+      "overrides": [
+        "prompt_features"
+      ],
+      "prompt_features_override": null
+    }
+    "sub": {
+      "description": "通常版",
+      "image": "sub.jpg",
+      "overrides": [
+        "prompt_features"
+      ],
+      "prompt_features_override": null
+    }
+  },
+  "personality": {},
+  "avatars": {},
+  "updated_at": "2026-03-08T05:44:49.275Z"
+}

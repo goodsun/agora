@@ -1,0 +1,28 @@
+{
+  "name": "goodsun",
+  "display_name": "goodsun",
+  "emoji": "",
+  "role": "",
+  "division": "",
+  "hire_date": "",
+  "character": "goodsun: サイバーパンク風の擬人化猫キャラ。紫×シアンのテックウェア、ピンクのサングラス、縞模様の毛並み、ふさふさの尻尾。クールでスタイリッシュな雰囲気。",
+  "prompt_features": "anthropomorphic cat character with striped fur, pink sunglasses, purple and cyan cyberpunk techware outfit with neon blue lines, fluffy tail, cool and stylish appearance, green eyes",
+  "default_style": "normal",
+  "styles": {
+    "normal": {
+      "description": "通常版 — サイバーパンクスタイル",
+      "image": "main.jpg",
+      "overrides": [
+        "prompt_features"
+      ],
+      "prompt_features_override": null
+    },
+    "manga": {
+      "description": "漫画版 — コミカル",
+      "prompt_features_override": null
+    }
+  },
+  "personality": {},
+  "avatars": {},
+  "updated_at": "2026-03-08T05:44:49.273Z"
+}

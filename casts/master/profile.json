@@ -1,0 +1,31 @@
+{
+  "name": "MASTER",
+  "display_name": "MASTER",
+  "emoji": "🐈️",
+  "role": "CEO",
+  "division": "HQ",
+  "hire_date": "",
+  "character": "MASTER（マスター）: スマートカジュアルな青年。短い黒髪、ジャケット、スマホやラップトップを持つ。知的でフレンドリーな雰囲気。テディの相棒。",
+  "prompt_features": "young man with short dark hair, smart casual jacket over shirt, friendly and intellectual appearance, holding smartphone or laptop",
+  "default_style": "normal",
+  "styles": {
+    "normal": {
+      "description": "通常版 — スマートカジュアル",
+      "image": "main.jpg",
+      "prompt_features_override": null
+    },
+    "Racing": {
+      "description": "劇画版— BR",
+      "image": "owner.jpg",
+      "prompt_features_override": null
+    },
+    "Cording": {
+      "description": "劇画版— PG",
+      "image": "flow_cordig.jpg",
+      "prompt_features_override": null
+    }
+  },
+  "personality": {},
+  "avatars": {},
+  "updated_at": "2026-03-13T11:03:05.803Z"
+}
