@@ -276,6 +276,7 @@ async function openFile(idx) {
   } else if (f.type === 'json') {
     const res = await fetch(`/api/file_manager/file?path=${encodeURIComponent(f.path)}`);
     const text = await res.text();
+    _rawText = text; // raw JSON を保持
     try {
       document.getElementById('json-pre').textContent = JSON.stringify(JSON.parse(text), null, 2);
     } catch {
@@ -286,6 +287,7 @@ async function openFile(idx) {
   } else {
     const res = await fetch(`/api/file_manager/file?path=${encodeURIComponent(f.path)}`);
     const text = await res.text();
+    _rawText = text; // raw マークダウンを保持
     document.getElementById('md-body').innerHTML = marked.parse(text);
     document.getElementById('md-body').style.display = 'block';
     hideSpinner();
@@ -347,6 +349,7 @@ async function deleteFile() {
 // ── 編集機能 ──
 let _editOriginal = '';
 let _isEditing = false;
+let _rawText = ''; // ファイルの生テキスト（MD/JSON）
 
 function startEdit() {
   _isEditing = true;
@@ -356,8 +359,7 @@ function startEdit() {
   const mdBody = document.getElementById('md-body');
   const area = document.getElementById('edit-area');
   const bar = document.getElementById('edit-bar');
-  const jsonBodyVisible = document.getElementById('json-body').style.display !== 'none';
-  const content = jsonBodyVisible ? pre.textContent : mdBody.innerText;
+  const content = _rawText; // raw テキストをそのまま使う
   _editOriginal = content;
   area.value = content;
   area.style.display = 'block';
