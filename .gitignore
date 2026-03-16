@@ -4,3 +4,4 @@ dist/
 *.log
 generated/
 uploads/scenes/
+data/uploads/
