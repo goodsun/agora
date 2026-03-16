@@ -163,12 +163,22 @@ fileManagerRouter.post('/compress', async (req, res) => {
   if (!IMAGE_EXTS.has(ext) || ext === '.svg' || ext === '.gif') return res.status(400).json({ error: 'not compressible' });
   const before = fs.statSync(p).size;
   try {
-    const buf = await sharp(p).jpeg({ quality: 75, progressive: true }).toBuffer();
-    const newPath = p.replace(/\.[^.]+$/, '.jpg');
+    let buf: Buffer;
+    let newPath: string;
+    if (ext === '.png') {
+      // PNG: 透過情報を保持したままpalette圧縮
+      buf = await sharp(p).png({ compressionLevel: 9, palette: true, quality: 80 }).toBuffer();
+      newPath = p; // 同名上書き
+    } else {
+      // JPG/WEBP: JPEG品質75で圧縮
+      buf = await sharp(p).jpeg({ quality: 75, progressive: true }).toBuffer();
+      newPath = p.replace(/\.[^.]+$/, '.jpg');
+    }
     fs.writeFileSync(newPath, buf);
     if (newPath !== p) fs.unlinkSync(p);
     const after = fs.statSync(newPath).size;
-    res.json({ ok: true, before, after, path: newPath });
+    const saved = Math.round((1 - after / before) * 100);
+    res.json({ ok: true, before, after, saved, path: newPath });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
