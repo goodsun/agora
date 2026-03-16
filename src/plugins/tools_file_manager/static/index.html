@@ -27,6 +27,9 @@
   .badge { font-size: 10px; padding: 1px 5px; border-radius: 3px; margin-left: 5px; }
   .badge-md { background: #2d6a4f; color: #95d5b2; }
   .badge-img { background: #7b2d8b; color: #e0aaff; }
+  .badge-json { background: #1a4a7a; color: #7ad4ff; }
+  #json-body { display:none; background: #0d1117; border-radius: 6px; padding: 16px; overflow-x: auto; }
+  #json-body pre { font-family: monospace; font-size: 0.88em; line-height: 1.6; color: #c8e0f0; white-space: pre-wrap; word-break: break-all; }
   .badge-dup { background: #7a5c00; color: #ffd966; }
   #divider { width: 5px; background: #222; cursor: col-resize; flex-shrink: 0; transition: background 0.1s; }
   #divider:hover, #divider.dragging { background: #e94560; }
@@ -68,6 +71,7 @@
       <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
       <button class="filter-btn" onclick="setFilter('md',this)">Markdown</button>
       <button class="filter-btn" onclick="setFilter('image',this)">Image</button>
+      <button class="filter-btn" onclick="setFilter('json',this)">JSON</button>
     </div>
     <div id="sort-btns">
       <button class="sort-btn active" onclick="setSort('path',this)">パス</button>
@@ -92,6 +96,7 @@
       <button id="delete-btn" onclick="deleteFile()">🗑 削除</button>
     </div>
     <div id="md-body" style="display:none"></div>
+    <div id="json-body" style="display:none"><pre id="json-pre"></pre></div>
     <img id="img-view" style="display:none">
   </div>
 </div>
@@ -218,6 +223,7 @@ async function openFile(idx) {
   renderBreadcrumb(f.path);
   document.getElementById('spinner').style.display = 'flex';
   document.getElementById('md-body').style.display = 'none';
+  document.getElementById('json-body').style.display = 'none';
   document.getElementById('img-view').style.display = 'none';
   const compBtn = document.getElementById('compress-btn');
   compBtn.style.display = f.type === 'image' ? 'block' : 'none';
@@ -230,6 +236,16 @@ async function openFile(idx) {
     img.onerror = hideSpinner;
     img.src = `/api/file_manager/file?path=${encodeURIComponent(f.path)}`;
     img.style.display = 'block';
+  } else if (f.type === 'json') {
+    const res = await fetch(`/api/file_manager/file?path=${encodeURIComponent(f.path)}`);
+    const text = await res.text();
+    try {
+      document.getElementById('json-pre').textContent = JSON.stringify(JSON.parse(text), null, 2);
+    } catch {
+      document.getElementById('json-pre').textContent = text;
+    }
+    document.getElementById('json-body').style.display = 'block';
+    hideSpinner();
   } else {
     const res = await fetch(`/api/file_manager/file?path=${encodeURIComponent(f.path)}`);
     const text = await res.text();

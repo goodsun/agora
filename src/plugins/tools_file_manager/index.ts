@@ -11,7 +11,8 @@ const SEARCH_ROOTS: string[] = (process.env.FILE_MANAGER_ROOTS || '/srv/agora,/s
 
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']);
 const MD_EXTS = new Set(['.md']);
-const ALLOWED_EXTS = new Set([...IMAGE_EXTS, ...MD_EXTS]);
+const JSON_EXTS = new Set(['.json']);
+const ALLOWED_EXTS = new Set([...IMAGE_EXTS, ...MD_EXTS, ...JSON_EXTS]);
 
 function isSafePath(p: string): boolean {
   const real = fs.realpathSync.native(p).replace(/\\/g, '/');
@@ -52,10 +53,11 @@ function walkDir(dir: string, results: any[]) {
       const ext = path.extname(entry).toLowerCase();
       if (!ALLOWED_EXTS.has(ext)) continue;
       const mime = IMAGE_EXTS.has(ext) ? `image/${ext.slice(1)}` : 'text/plain';
+      const type = IMAGE_EXTS.has(ext) ? 'image' : JSON_EXTS.has(ext) ? 'json' : 'md';
       results.push({
         path: full,
         name: entry,
-        type: IMAGE_EXTS.has(ext) ? 'image' : 'md',
+        type,
         dir: dir,
         mtime: stat.mtimeMs / 1000,
         ctime: stat.ctimeMs / 1000,
