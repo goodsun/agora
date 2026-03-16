@@ -52,7 +52,7 @@ toolsImageGenRouter.get('/', (_req, res) => {
     body{background:#0a0e1a;color:#e0e6f0;font-family:'Segoe UI',sans-serif;min-height:100vh;padding:2rem}
     h1{font-size:1.4rem;font-weight:300;letter-spacing:.15em;color:#c8b8ff;margin-bottom:.3rem}
     .subtitle{font-size:.8rem;color:#445566;margin-bottom:2rem}
-    .layout{display:grid;grid-template-columns:340px 1fr;gap:1.5rem;max-width:1100px}
+    .layout{display:grid;grid-template-columns:450px 1fr;gap:1.5rem;max-width:1200px}
     .panel{background:#111827;border:1px solid #1e2d4a;border-radius:8px;padding:1.2rem;margin-bottom:1rem}
     .panel h2{font-size:.85rem;font-weight:600;color:#7a8aaa;letter-spacing:.1em;margin-bottom:1rem;text-transform:uppercase}
     label{font-size:.8rem;color:#7a8aaa;display:block;margin-bottom:.3rem}
@@ -101,12 +101,23 @@ toolsImageGenRouter.get('/', (_req, res) => {
     .api-key-row .lock{font-size:.8rem;color:#556677;flex-shrink:0}
     a.back{font-size:.8rem;color:#445566;text-decoration:none;display:inline-block;margin-bottom:1.5rem}
     a.back:hover{color:#7a8aaa}
+    /* モーダル */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;cursor:pointer}
+    .modal-overlay.open{display:flex}
+    .modal-overlay img{max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 8px 48px rgba(0,0,0,.8)}
+    .cast-thumb{cursor:pointer}
+    .cast-thumb:hover{border-color:#6644cc;opacity:.9}
     /* ダウンロードボタン */
     .dl-btn{margin-top:1rem;padding:.5rem 1.5rem;background:#1a2a4a;border:1px solid #2244cc;border-radius:5px;color:#aabbff;font-size:.85rem;cursor:pointer;text-decoration:none;display:none}
     .dl-btn:hover{background:#2a3a5a}
   </style>
 </head>
 <body>
+  <!-- モーダル -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <img id="modalImg" src="" alt="">
+  </div>
+
   <a href="/" class="back"><i class="fa fa-arrow-left"></i> agora</a>
   <h1><i class="fa fa-palette"></i> image_gen</h1>
   <p class="subtitle">agora 共通画像生成 UI</p>
@@ -268,7 +279,7 @@ function renderRows() {
         </select>
         <select onchange="onStyleChange(\${r.rowId},this.value)">\${styleOpts}</select>
       </div>
-      <img id="thumb_\${r.rowId}" src="\${imgUrl}" class="cast-thumb" style="\${imgUrl?'':'display:none'}" loading="lazy">
+      <img id="thumb_\${r.rowId}" src="\${imgUrl}" class="cast-thumb" style="\${imgUrl?'':'display:none'}" loading="lazy" onclick="openModal('\${imgUrl}')" title="クリックで拡大">
       <div class="cast-thumb-empty" style="\${imgUrl?'display:none':''}">👤</div>
       \${isFirst ? '' : \`<button class="cast-rm" onclick="removeRow(\${r.rowId})"><i class="fa fa-xmark"></i></button>\`}
     </div>\`;
@@ -385,6 +396,17 @@ async function generate() {
   }
   btn.disabled = false;
 }
+
+// ── モーダル ──
+function openModal(src) {
+  if (!src) return;
+  document.getElementById('modalImg').src = src;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 // ── localStorage 保存・復元 ──
 const LS_KEY = 'agora_image_gen_v1';
