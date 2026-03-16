@@ -116,7 +116,7 @@
     </div>
     <div id="md-body" style="display:none"></div>
     <div id="json-body" style="display:none"><pre id="json-pre"></pre></div>
-    <textarea id="edit-area" spellcheck="false"></textarea>
+    <textarea id="edit-area" spellcheck="false" onkeydown="if(event.key==='Escape')cancelEdit()"></textarea>
     <div class="edit-bar" id="edit-bar">
       <button class="save-btn" onclick="saveEdit()">💾 保存</button>
       <button class="cancel-btn" onclick="cancelEdit()">キャンセル</button>
@@ -483,6 +483,9 @@ document.addEventListener('mouseup', () => {
 
 // キーボード
 document.addEventListener('keydown', e => {
+  // 編集中・リネーム中はナビゲーション系ショートカットを全てスキップ
+  if (_isEditing) { if (e.key === 'Escape') cancelEdit(); return; }
+  if (e.target.id === 'rename-input') return;
   if (e.target.id === 'search') {
     if (e.key === 'ArrowDown') { e.preventDefault(); moveCursor(1); }
     if (e.key === 'ArrowUp')   { e.preventDefault(); moveCursor(-1); }

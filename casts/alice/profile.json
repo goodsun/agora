@@ -14,7 +14,23 @@
   "styles": {
     "normal": {
       "description": "通常版",
-      "image": "normal.jpg",
+      "image": "main.jpg",
+      "overrides": [
+        "prompt_features"
+      ],
+      "prompt_features_override": null
+    },
+    "original": {
+      "description": "オリジナル版",
+      "image": "original.jpg",
+      "overrides": [
+        "prompt_features"
+      ],
+      "prompt_features_override": null
+    },
+    "racing": {
+      "description": "BizenyRacing版",
+      "image": "br_alice.jpg",
       "overrides": [
         "prompt_features"
       ],
@@ -28,21 +44,21 @@
       ],
       "prompt_features_override": null
     },
-    "manga": {
-      "description": "漫画風",
-      "image": "manga.jpg",
+    "admiral": {
+      "description": "提督 — 黒軍服",
+      "image": "admiral.jpg",
       "overrides": [
         "prompt_features"
       ],
-      "prompt_features_override": null
+      "prompt_features_override": "young anime girl with confident and authoritative expression"
     },
     "commander": {
-      "description": "提督 — 黒軍服・金肩章・白スカート",
+      "description": "司令官 — 黒軍服",
       "image": "commander.jpg",
       "overrides": [
         "prompt_features"
       ],
-      "prompt_features_override": "young anime girl with long straight blonde hair, blue eyes, black military commander uniform with gold epaulettes and gold buttons, black military cap with gold emblem, white pleated skirt, black gloves, black boots, confident and authoritative expression"
+      "prompt_features_override": "young anime girl with confident and authoritative expression"
     }
   }
 }
