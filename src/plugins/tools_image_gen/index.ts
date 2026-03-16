@@ -7,6 +7,13 @@ export const toolsImageGenRouter = Router();
 const AGORA_ROOT = path.resolve(__dirname, '../../..');
 const CASTS_DIR = path.join(AGORA_ROOT, 'casts');
 
+function loadTouchPresets() {
+  try {
+    const f = path.join(AGORA_ROOT, 'data/image_gen/touch_presets.json');
+    return JSON.parse(fs.readFileSync(f, 'utf-8'));
+  } catch { return { presets: [], default: '' }; }
+}
+
 function loadCasts() {
   if (!fs.existsSync(CASTS_DIR)) return [];
   return fs.readdirSync(CASTS_DIR)
@@ -29,6 +36,9 @@ function loadCasts() {
 toolsImageGenRouter.get('/', (_req, res) => {
   const casts = loadCasts();
   const castsJson = JSON.stringify(casts);
+  const touchData = loadTouchPresets();
+  const touchPresetsJson = JSON.stringify(touchData.presets);
+  const touchDefault = touchData.default || 'manga_warm';
 
   res.send(`<!DOCTYPE html>
 <html lang="ja">
@@ -98,6 +108,10 @@ toolsImageGenRouter.get('/', (_req, res) => {
       <div class="panel">
         <h2>生成設定</h2>
         <div class="form-group">
+          <label>画風・タッチ</label>
+          <select id="touch"></select>
+        </div>
+        <div class="form-group">
           <label>プロンプト</label>
           <textarea id="prompt" placeholder="シーンや状況を日本語・英語で入力..."></textarea>
         </div>
@@ -140,6 +154,8 @@ toolsImageGenRouter.get('/', (_req, res) => {
 
 <script>
 const casts = ${castsJson};
+const touchPresets = ${touchPresetsJson};
+const touchDefault = '${touchDefault}';
 const selected = []; // [{id, style, label}]
 const LABELS = 'ABCDEFGHIJ'.split('');
 
@@ -194,6 +210,12 @@ function renderSelected() {
   }).join('');
 }
 
+function renderTouchPresets() {
+  const sel = document.getElementById('touch');
+  sel.innerHTML = '<option value="">— タッチ指定なし —</option>' +
+    touchPresets.map(t => \`<option value="\${t.id}" \${t.id===touchDefault?'selected':''}>\${t.label}</option>\`).join('');
+}
+
 async function generate() {
   const prompt = document.getElementById('prompt').value.trim();
   if (!prompt) { alert('プロンプトを入力してください'); return; }
@@ -211,12 +233,17 @@ async function generate() {
 
   const castRefs = selected.map(s => ({ id: s.id, style: s.style, label: s.label }));
 
+  // タッチプリセットのpromptを合成
+  const touchId = document.getElementById('touch').value;
+  const touchPrompt = touchPresets.find(t => t.id === touchId)?.prompt || '';
+  const finalPrompt = touchPrompt ? prompt + '. ' + touchPrompt : prompt;
+
   try {
     const res = await fetch('/api/image_gen/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
       body: JSON.stringify({
-        prompt,
+        prompt: finalPrompt,
         cast_refs: castRefs,
         gen_model: document.getElementById('model').value,
         gen_aspect: document.getElementById('aspect').value,
@@ -241,6 +268,7 @@ async function generate() {
 }
 
 renderCastGrid();
+renderTouchPresets();
 </script>
 </body>
 </html>`);
