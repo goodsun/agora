@@ -12,6 +12,8 @@ const CASTS_DIR = path.join(AGORA_ROOT, 'casts');
 const GEN_SCRIPT = path.join(__dirname, 'gen.js');
 const OUT_DIR = process.env.AGORA_GEN_OUT || path.join(AGORA_ROOT, 'generated');
 const KEEP_HOURS = parseInt(process.env.AGORA_GEN_KEEP_HOURS || "336"); // デフォルト2週間
+const SCENES_DIR = path.join(AGORA_ROOT, 'data/uploads/scenes');
+if (!fs.existsSync(SCENES_DIR)) fs.mkdirSync(SCENES_DIR, { recursive: true });
 
 // 出力ディレクトリを確保
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -33,13 +35,15 @@ function cleanupOldFiles() {
 cleanupOldFiles();
 setInterval(cleanupOldFiles, 60 * 60 * 1000);
 
-// 背景アップロード用multer
+// 背景アップロード用multer（data/uploads/scenes/ に永続保存）
 const bgUpload = multer({
   storage: multer.diskStorage({
-    destination: OUT_DIR,
+    destination: SCENES_DIR,
     filename: (_req, file, cb) => {
       const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
-      cb(null, `bg_${Date.now()}${ext}`);
+      const base = path.basename(file.originalname, path.extname(file.originalname))
+        .replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32);
+      cb(null, `${base}_${Date.now()}${ext}`);
     }
   }),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
@@ -49,10 +53,26 @@ const bgUpload = multer({
   }
 });
 
+// GET /api/image_gen/scenes — シーン一覧（認証不要）
+imageServeRouter.get('/scenes', (_req, res) => {
+  const IMG_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
+  const files = fs.existsSync(SCENES_DIR)
+    ? fs.readdirSync(SCENES_DIR).filter(f => IMG_EXTS.includes(path.extname(f).toLowerCase()))
+    : [];
+  res.json(files.map(f => ({ filename: f, url: `/api/image_gen/scene/${f}` })));
+});
+
+// GET /api/image_gen/scene/:file — シーン画像配信（認証不要）
+imageServeRouter.get('/scene/:file', (req, res) => {
+  const fp = path.join(SCENES_DIR, path.basename(req.params.file));
+  if (!fs.existsSync(fp)) return res.status(404).end();
+  res.sendFile(fp);
+});
+
 // POST /api/image_gen/upload_bg — 背景画像アップロード（APIキー必須）
 imageGenRouter.post('/upload_bg', bgUpload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'no file' });
-  res.json({ ok: true, filename: req.file.filename });
+  res.json({ ok: true, filename: req.file.filename, url: `/api/image_gen/scene/${req.file.filename}` });
 });
 
 function getGeminiKey(): string {
@@ -81,7 +101,7 @@ imageGenRouter.post('/generate', (req, res) => {
   // 背景画像をrefの先頭に追加
   const bg_filename = bg_fn ? String(bg_fn) : '';
   if (bg_filename) {
-    const bgPath = path.join(OUT_DIR, path.basename(bg_filename));
+    const bgPath = path.join(SCENES_DIR, path.basename(bg_filename));
     if (fs.existsSync(bgPath)) refsArr.push({ path: bgPath, label: 'BG' });
   }
 
@@ -120,7 +140,7 @@ imageGenRouter.post('/generate', (req, res) => {
 });
 
 // GET /api/image_gen/img/:filename — 生成画像配信（認証不要）
-imageServeRouter.get('/:filename', (req, res) => {
+imageServeRouter.get('/img/:filename', (req, res) => {
   const filePath = path.join(OUT_DIR, path.basename(req.params.filename));
   if (!fs.existsSync(filePath)) return res.status(404).end();
   res.sendFile(filePath);

@@ -142,14 +142,20 @@ toolsImageGenRouter.get('/', (_req, res) => {
       <!-- 背景シーン -->
       <div class="panel">
         <h2>背景シーン（任意）</h2>
+        <div class="form-group">
+          <label>保存済みシーン</label>
+          <select id="sceneSelect" onchange="onSceneSelect(this.value)">
+            <option value="">— なし —</option>
+          </select>
+        </div>
         <div class="bg-area">
           <div class="bg-placeholder" id="bgPlaceholder" onclick="document.getElementById('bgInput').click()">
             <i class="fa fa-image"></i>
           </div>
-          <img id="bgPreview" class="bg-preview" alt="背景プレビュー">
+          <img id="bgPreview" class="bg-preview" alt="背景プレビュー" onclick="openModal(this.src)" style="cursor:pointer">
           <div class="bg-btns">
             <button class="btn-sm" onclick="document.getElementById('bgInput').click()">
-              <i class="fa fa-folder-open"></i> 画像を選択
+              <i class="fa fa-upload"></i> 新規アップロード
             </button>
             <button class="btn-sm danger" id="bgClearBtn" style="display:none" onclick="clearBg()">
               <i class="fa fa-xmark"></i> クリア
@@ -287,6 +293,28 @@ function renderRows() {
   }).join('');
 }
 
+// ── シーン一覧読み込み ──
+async function loadScenes() {
+  try {
+    const res = await fetch('/api/image_gen/scenes');
+    const scenes = await res.json();
+    const sel = document.getElementById('sceneSelect');
+    sel.innerHTML = '<option value="">— なし —</option>' +
+      scenes.map(s => \`<option value="\${s.filename}">\${s.filename.replace(/_\\d+\\.\\w+$/, '').replace(/_/g,' ')}</option>\`).join('');
+  } catch {}
+}
+
+function onSceneSelect(filename) {
+  if (!filename) { clearBg(); return; }
+  bgFilename = filename;
+  const url = '/api/image_gen/scene/' + filename;
+  document.getElementById('bgPreview').src = url;
+  document.getElementById('bgPreview').style.display = 'block';
+  document.getElementById('bgPlaceholder').style.display = 'none';
+  document.getElementById('bgClearBtn').style.display = 'inline-block';
+  document.getElementById('bgStatus').textContent = '背景セット済み: ' + filename;
+}
+
 // ── 背景アップロード ──
 async function uploadBg(input) {
   const file = input.files[0];
@@ -306,12 +334,14 @@ async function uploadBg(input) {
     const data = await res.json();
     if (data.ok) {
       bgFilename = data.filename;
-      const url = '/api/image_gen/img/' + data.filename;
+      const url = '/api/image_gen/scene/' + data.filename;
       document.getElementById('bgPreview').src = url;
       document.getElementById('bgPreview').style.display = 'block';
       document.getElementById('bgPlaceholder').style.display = 'none';
       document.getElementById('bgClearBtn').style.display = 'inline-block';
       document.getElementById('bgStatus').textContent = '背景セット済み: ' + file.name;
+      await loadScenes();
+      document.getElementById('sceneSelect').value = data.filename;
     } else {
       document.getElementById('bgStatus').textContent = 'エラー: ' + (data.error||'失敗');
     }
@@ -327,6 +357,7 @@ function clearBg() {
   document.getElementById('bgPlaceholder').style.display = 'flex';
   document.getElementById('bgClearBtn').style.display = 'none';
   document.getElementById('bgStatus').textContent = '';
+  document.getElementById('sceneSelect').value = '';
 }
 
 // ── タッチプリセット ──
@@ -432,6 +463,7 @@ function loadState() {
 
 // ── 初期化 ──
 renderTouchPresets();
+loadScenes();
 const saved = loadState();
 if (saved && saved.rows && saved.rows.length > 0) {
   saved.rows.forEach(r => addCastRow(r.id, r.style));
