@@ -105,7 +105,7 @@
   <div id="content">
     <div id="placeholder">← ファイルを選んでください</div>
     <div id="filepath-bar">
-      <div id="filepath"></div>
+      <div id="filepath" data-fullpath=""></div>
       <button id="compress-btn" onclick="compressFile()" style="display:none">🗜 軽量化</button>
       <button id="edit-btn" onclick="startEdit()" style="display:none">✏️ 編集</button>
       <button id="rename-btn" onclick="startRename()">📝 リネーム</button>
@@ -131,10 +131,14 @@ let allFiles = [], filteredFiles = [], currentFilter = 'all', currentSort = 'pat
 function renderBreadcrumb(fullPath) {
   const el = document.getElementById('filepath');
   el.innerHTML = '';
-  const parts = fullPath.split('/').filter(Boolean); // ['srv','agora','casts','akiko','armored.jpg']
+  el.dataset.fullpath = fullPath; // フルパスはdata属性に保持
+  // 表示は /srv/ を除いたパスで
+  const displayPath = fullPath.replace(/^\/srv\//, '');
+  const parts = displayPath.split('/').filter(Boolean);
   let accumulated = '';
   parts.forEach((part, i) => {
-    accumulated += '/' + part;
+    // スコープ検索用のaccumulatedはフルパスで計算
+    accumulated += (i === 0 ? '/' + 'srv/' + fullPath.split('/').filter(Boolean)[0] + '/' : '') + part + '/';
     const isLast = i === parts.length - 1;
     const sep = document.createElement('span');
     sep.className = 'crumb-sep';
@@ -147,7 +151,7 @@ function renderBreadcrumb(fullPath) {
     } else {
       crumb.className = 'crumb';
       crumb.textContent = part;
-      const scopePath = accumulated;
+      const scopePath = fullPath.split('/').slice(0, i + 3).join('/'); // /srv/xxx/... のフルパス
       crumb.onclick = () => {
         document.getElementById('search').value = scopePath;
         renderList();
@@ -285,7 +289,7 @@ async function openFile(idx) {
 }
 
 async function compressFile() {
-  const path = document.getElementById('filepath').textContent.trim();
+  const path = document.getElementById('filepath').dataset.fullpath;
   if (!path) return;
   if (!confirm(`画像を軽量化しますか？（上書き保存されます）\n\n${path}`)) return;
   const btn = document.getElementById('compress-btn');
@@ -311,7 +315,7 @@ async function compressFile() {
 }
 
 async function deleteFile() {
-  const path = document.getElementById('filepath').textContent.trim();
+  const path = document.getElementById('filepath').dataset.fullpath;
   if (!path) return;
   if (!confirm(`本当に削除しますか？\n\n${path}`)) return;
   const res = await fetch(`/api/file_manager/file?path=${encodeURIComponent(path)}`, { method: 'DELETE' });
@@ -373,7 +377,7 @@ function cancelEdit() {
 }
 
 async function saveEdit() {
-  const path = document.getElementById('filepath').textContent;
+  const path = document.getElementById('filepath').dataset.fullpath;
   const area = document.getElementById('edit-area');
   const errEl = document.getElementById('edit-err');
   const content = area.value;
@@ -402,7 +406,7 @@ async function saveEdit() {
 
 // ── リネーム ──
 function startRename() {
-  const path = document.getElementById('filepath').textContent.trim();
+  const path = document.getElementById('filepath').dataset.fullpath;
   if (!path) return;
   const input = document.getElementById('rename-input');
   input.value = path.split('/').pop();
@@ -419,7 +423,7 @@ async function onRenameKey(e) {
   if (e.key !== 'Enter') return;
   const input = document.getElementById('rename-input');
   const newname = input.value.trim();
-  const oldPath = document.getElementById('filepath').textContent.trim();
+  const oldPath = document.getElementById('filepath').dataset.fullpath;
   if (!newname || newname === oldPath.split('/').pop()) { input.style.display = 'none'; return; }
   const res = await fetch(`/api/file_manager/file?path=${encodeURIComponent(oldPath)}&newname=${encodeURIComponent(newname)}`, { method: 'PATCH' });
   const data = await res.json();
@@ -437,7 +441,7 @@ async function onRenameKey(e) {
 
 // ── アップロード ──
 async function uploadFiles(input) {
-  const dir = document.getElementById('filepath').textContent.trim().split('/').slice(0, -1).join('/') || '/srv/agora';
+  const dir = document.getElementById('filepath').dataset.fullpath.split('/').slice(0, -1).join('/') || '/srv/agora';
   const files = Array.from(input.files);
   let uploaded = 0;
   for (const file of files) {
