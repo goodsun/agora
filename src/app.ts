@@ -114,6 +114,11 @@ app.use('/api/image_gen', requireApiKey, imageGenRouter);
 import { toolsImageGenRouter } from './plugins/tools_image_gen';
 app.use('/tools/image_gen', toolsImageGenRouter);
 
+// ── file_manager API + UI ──
+import { fileManagerRouter, fileManagerUIRouter } from './plugins/tools_file_manager';
+app.use('/api/file_manager', fileManagerRouter);
+app.use('/tools/file_manager', fileManagerUIRouter);
+
 app.listen(PORT, () => {
   console.log(`agora listening on port ${PORT}`);
   console.log(`→ http://localhost:${PORT}/`);
