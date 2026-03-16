@@ -356,7 +356,8 @@ function startEdit() {
   const mdBody = document.getElementById('md-body');
   const area = document.getElementById('edit-area');
   const bar = document.getElementById('edit-bar');
-  const content = pre.style.display !== 'none' ? pre.textContent : mdBody.innerText;
+  const jsonBodyVisible = document.getElementById('json-body').style.display !== 'none';
+  const content = jsonBodyVisible ? pre.textContent : mdBody.innerText;
   _editOriginal = content;
   area.value = content;
   area.style.display = 'block';
