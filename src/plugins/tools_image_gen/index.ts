@@ -63,10 +63,9 @@ toolsImageGenRouter.get('/', (_req, res) => {
     /* キャスト行 */
     .cast-row{display:flex;align-items:center;gap:.6rem;background:#0d1117;border:1px solid #1e2d4a;border-radius:6px;padding:.6rem .75rem;margin-bottom:.5rem}
     .cast-label{font-size:1rem;font-weight:700;color:#e94560;width:1.2rem;flex-shrink:0;text-align:center}
-    .cast-row-selects{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;flex:1;min-width:0}
-    .cast-row-selects label{font-size:.72rem;color:#7a8aaa;margin-bottom:.2rem}
-    .cast-thumb{width:52px;height:52px;object-fit:cover;border-radius:5px;border:1px solid #1e2d4a;flex-shrink:0;background:#16213e}
-    .cast-thumb-empty{width:52px;height:52px;background:#16213e;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;color:#334455}
+    .cast-row-selects{display:flex;flex-direction:column;gap:.4rem;flex:1;min-width:0}
+    .cast-thumb{width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid #1e2d4a;flex-shrink:0;background:#16213e}
+    .cast-thumb-empty{width:72px;height:72px;background:#16213e;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;color:#334455}
     .cast-rm{background:none;border:none;color:#664455;cursor:pointer;font-size:1rem;flex-shrink:0;padding:.2rem}
     .cast-rm:hover{color:#e94560}
     .btn-add-cast{font-size:.82rem;padding:.45rem 1rem;background:#1a2a4a;border:1px solid #2244cc;border-radius:5px;color:#88aaee;cursor:pointer;margin-top:.3rem}
@@ -264,16 +263,10 @@ function renderRows() {
     return \`<div class="cast-row">
       <span class="cast-label">\${label}</span>
       <div class="cast-row-selects">
-        <div>
-          <label>キャラクター</label>
-          <select onchange="onCastChange(\${r.rowId},this.value)">
-            \${casts.map(c2=>\`<option value="\${c2.id}" \${c2.id===r.id?'selected':''}>\${c2.name}</option>\`).join('')}
-          </select>
-        </div>
-        <div>
-          <label>スタイル</label>
-          <select onchange="onStyleChange(\${r.rowId},this.value)">\${styleOpts}</select>
-        </div>
+        <select onchange="onCastChange(\${r.rowId},this.value)">
+          \${casts.map(c2=>\`<option value="\${c2.id}" \${c2.id===r.id?'selected':''}>\${c2.name}</option>\`).join('')}
+        </select>
+        <select onchange="onStyleChange(\${r.rowId},this.value)">\${styleOpts}</select>
       </div>
       <img id="thumb_\${r.rowId}" src="\${imgUrl}" class="cast-thumb" style="\${imgUrl?'':'display:none'}" loading="lazy">
       <div class="cast-thumb-empty" style="\${imgUrl?'display:none':''}">👤</div>
