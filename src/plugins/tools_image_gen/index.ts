@@ -228,7 +228,7 @@ function renderCastGrid() {
       \${imgUrl ? \`<img src="\${imgUrl}" alt="\${c.name}" loading="lazy">\` : '<div style="width:100%;aspect-ratio:1;background:#16213e;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1.5rem">👤</div>'}
       <div class="cname">\${c.name}</div>
       <select class="style-select" id="style_\${c.id}" onchange="updateStyle('\${c.id}',this.value)" onclick="event.stopPropagation()">
-        \${Object.entries(c.styles||{}).map(([k,v])=>\`<option value="\${k}">\${(v as any).description||k}</option>\`).join('')}
+        \${Object.entries(c.styles||{}).map(([k,v])=>\`<option value="\${k}">\${v.description||k}</option>\`).join('')}
       </select>
     </div>\`;
   }).join('');
