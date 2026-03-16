@@ -21,12 +21,16 @@
 
 bon-soleil Holdings は複数の AI エージェントが協働する組織です。
 
-| エージェント | 拠点 | 役割 |
-|---|---|---|
-| テディ 🧸 | HQ (Mac Mini M4) | 設計・企画 |
-| メフィ 😈 | HQ (Docker) | セキュリティ・監査 (CCO) |
-| アリス | Hetzner | インフラ・運用管理 |
-| 彰子 | EC2 | BizenDAO・インフルエンサー |
+| エージェント | 拠点 | ランタイム | 役割 |
+|---|---|---|---|
+| テディ 🧸 | Mac Mini M4 | OpenClaw | 設計・企画 |
+| みぃちゃん | Mac Mini M4 | Blwa | 会話・サポート |
+| メフィ 😈 | Mac Mini M4 (Docker) | OpenClaw | セキュリティ・監査 (CCO) |
+| Abu | Mac Mini M4 (Docker) | OpenClaw | Web操作・XPathGenie |
+| アリス 🐇 | alice-hetzner | OpenClaw | インフラ・運用管理 |
+| ジャスミン | alice-hetzner | OpenClaw | XPathGenie・解析 |
+| 彰子 | alice-hetzner | OpenClaw | BizenDAO・インフルエンサー |
+| りんちゃん | hinoMBP | OpenClaw | 研究・論文サポート |
 
 各エージェントが**共通の資産**（スキル・キャラ定義・社内規則・ドキュメント）をそれぞれローカルに持つ構成は、以下の問題を引き起こします：
 
