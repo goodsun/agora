@@ -60,26 +60,18 @@ toolsImageGenRouter.get('/', (_req, res) => {
     textarea{min-height:100px}
     textarea:focus,select:focus,input:focus{border-color:#4466aa}
     .form-group{margin-bottom:1rem}
-    /* キャストグリッド */
-    .cast-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem;max-height:260px;overflow-y:auto}
-    .cast-card{background:#0d1117;border:1px solid #1e2d4a;border-radius:6px;padding:.5rem;cursor:pointer;transition:.15s;text-align:center}
-    .cast-card:hover{border-color:#4466aa}
-    .cast-card.selected{border-color:#6644cc;background:#1a1030}
-    .cast-card img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;background:#16213e}
-    .cast-card .cname{font-size:.72rem;margin-top:.3rem;color:#aabbcc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .style-select{width:100%;margin-top:.3rem;font-size:.72rem;padding:.25rem .4rem}
-    /* 選択キャストプレビュー */
-    .cast-preview-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;min-height:32px}
-    .cast-preview-item{display:flex;align-items:center;gap:.75rem;background:#0d1117;border:1px solid #2a1a4a;border-radius:6px;padding:.5rem .75rem}
-    .cast-preview-item img{width:48px;height:48px;object-fit:cover;border-radius:5px;border:1px solid #1e2d4a;flex-shrink:0}
-    .cast-preview-item .no-img{width:48px;height:48px;background:#16213e;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
-    .cast-preview-item .pinfo{flex:1;min-width:0}
-    .cast-preview-item .plabel{font-size:.75rem;color:#6644cc;font-weight:700}
-    .cast-preview-item .pname{font-size:.85rem;color:#c8b8ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cast-preview-item .pstyle{font-size:.72rem;color:#7a8aaa;margin-top:.1rem}
-    .cast-preview-item .pbtn{background:none;border:none;color:#664466;cursor:pointer;font-size:1rem;flex-shrink:0;padding:.2rem}
-    .cast-preview-item .pbtn:hover{color:#e94560}
-    .cast-preview-empty{font-size:.8rem;color:#334455;text-align:center;padding:.5rem}
+    /* キャスト行 */
+    .cast-row{display:flex;align-items:center;gap:.6rem;background:#0d1117;border:1px solid #1e2d4a;border-radius:6px;padding:.6rem .75rem;margin-bottom:.5rem}
+    .cast-label{font-size:1rem;font-weight:700;color:#e94560;width:1.2rem;flex-shrink:0;text-align:center}
+    .cast-row-selects{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;flex:1;min-width:0}
+    .cast-row-selects label{font-size:.72rem;color:#7a8aaa;margin-bottom:.2rem}
+    .cast-thumb{width:52px;height:52px;object-fit:cover;border-radius:5px;border:1px solid #1e2d4a;flex-shrink:0;background:#16213e}
+    .cast-thumb-empty{width:52px;height:52px;background:#16213e;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;color:#334455}
+    .cast-rm{background:none;border:none;color:#664455;cursor:pointer;font-size:1rem;flex-shrink:0;padding:.2rem}
+    .cast-rm:hover{color:#e94560}
+    .btn-add-cast{font-size:.82rem;padding:.45rem 1rem;background:#1a2a4a;border:1px solid #2244cc;border-radius:5px;color:#88aaee;cursor:pointer;margin-top:.3rem}
+    .btn-add-cast:hover{background:#2a3a5a}
+    .hint-text{font-size:.75rem;color:#445566;margin-top:.5rem}
     /* 背景アップロード */
     .bg-area{display:flex;gap:.75rem;align-items:center}
     .bg-preview{width:64px;height:64px;object-fit:cover;border-radius:5px;border:1px solid #1e2d4a;flex-shrink:0;display:none}
@@ -130,11 +122,10 @@ toolsImageGenRouter.get('/', (_req, res) => {
     <div>
       <!-- キャスト選択 -->
       <div class="panel">
-        <h2>キャラクター選択</h2>
-        <div class="cast-grid" id="castGrid"></div>
-        <div class="cast-preview-list" id="castPreviewList">
-          <div class="cast-preview-empty">キャラ未選択</div>
-        </div>
+        <h2><i class="fa fa-masks-theater"></i> キャスト（任意・複数可）</h2>
+        <div id="castRows"></div>
+        <button class="btn-add-cast" onclick="addCastRow()">＋ キャスト追加</button>
+        <p class="hint-text">複数選択時はプロンプトでA/B/Cと指定: "A is standing, B is next to A"</p>
       </div>
 
       <!-- 背景シーン -->
@@ -213,75 +204,80 @@ const casts = ${castsJson};
 const touchPresets = ${touchPresetsJson};
 const touchDefault = '${touchDefault}';
 const LABELS = 'ABCDEFGHIJ'.split('');
-const selected = []; // {id, style, label}
+let rows = []; // [{id, style, rowId}]
+let rowCounter = 0;
 let bgFilename = '';
 
-// ── キャストグリッド ──
-function renderCastGrid() {
-  const grid = document.getElementById('castGrid');
-  grid.innerHTML = casts.map(c => {
-    const defStyle = c.default_style || Object.keys(c.styles||{})[0] || 'normal';
-    const styleData = (c.styles||{})[defStyle] || {};
-    const imgUrl = styleData.imageUrl || '';
-    const isSel = selected.some(s => s.id === c.id);
-    return \`<div class="cast-card \${isSel?'selected':''}" id="card_\${c.id}" onclick="toggleCast('\${c.id}')">
-      \${imgUrl ? \`<img src="\${imgUrl}" alt="\${c.name}" loading="lazy">\` : '<div style="width:100%;aspect-ratio:1;background:#16213e;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1.5rem">👤</div>'}
-      <div class="cname">\${c.name}</div>
-      <select class="style-select" id="style_\${c.id}" onchange="updateStyle('\${c.id}',this.value)" onclick="event.stopPropagation()">
-        \${Object.entries(c.styles||{}).map(([k,v])=>\`<option value="\${k}">\${v.description||k}</option>\`).join('')}
-      </select>
-    </div>\`;
-  }).join('');
+const castOptions = casts.map(c => \`<option value="\${c.id}">\${c.name}</option>\`).join('');
+
+function addCastRow(initId, initStyle) {
+  if (rows.length >= 10) return;
+  const rid = ++rowCounter;
+  const label = LABELS[rows.length];
+  const c = casts.find(c => c.id === (initId || casts[0]?.id));
+  const id = c?.id || '';
+  const style = initStyle || c?.default_style || Object.keys(c?.styles||{})[0] || '';
+  rows.push({ id, style, rowId: rid });
+  renderRows();
 }
 
-function toggleCast(id) {
-  const idx = selected.findIndex(s => s.id === id);
-  if (idx >= 0) { selected.splice(idx, 1); }
-  else if (selected.length < 10) {
-    const style = document.getElementById('style_'+id)?.value || 'normal';
-    selected.push({ id, style, label: LABELS[selected.length] });
-  }
-  selected.forEach((s,i) => s.label = LABELS[i]);
-  renderCastGrid();
-  renderCastPreview();
+function removeRow(rid) {
+  rows = rows.filter(r => r.rowId !== rid);
+  renderRows();
 }
 
-function updateStyle(id, style) {
-  const s = selected.find(s => s.id === id);
-  if (s) { s.style = style; renderCastPreview(); }
+function onCastChange(rid, id) {
+  const r = rows.find(r => r.rowId === rid);
+  if (!r) return;
+  r.id = id;
+  const c = casts.find(c => c.id === id);
+  r.style = c?.default_style || Object.keys(c?.styles||{})[0] || '';
+  renderRows();
 }
 
-function removeCast(id) {
-  const idx = selected.findIndex(s => s.id === id);
-  if (idx >= 0) selected.splice(idx, 1);
-  selected.forEach((s,i) => s.label = LABELS[i]);
-  renderCastGrid();
-  renderCastPreview();
+function onStyleChange(rid, style) {
+  const r = rows.find(r => r.rowId === rid);
+  if (r) { r.style = style; updateThumb(rid); }
 }
 
-// ── キャストプレビュー ──
-function renderCastPreview() {
-  const el = document.getElementById('castPreviewList');
-  if (!selected.length) {
-    el.innerHTML = '<div class="cast-preview-empty">キャラ未選択</div>';
-    return;
-  }
-  el.innerHTML = selected.map(s => {
-    const c = casts.find(c => c.id === s.id);
-    if (!c) return '';
-    const styleData = (c.styles||{})[s.style] || {};
-    const imgUrl = styleData.imageUrl || '';
-    const desc = styleData.description || s.style;
-    return \`<div class="cast-preview-item">
-      \${imgUrl
-        ? \`<img src="\${imgUrl}" alt="\${c.name}">\`
-        : \`<div class="no-img">\${c.emoji||'👤'}</div>\`}
-      <div class="pinfo">
-        <div class="plabel">\${s.label}</div>
-        <div class="pname">\${c.name}</div>
-        <div class="pstyle">\${desc}</div>
+function updateThumb(rid) {
+  const r = rows.find(r => r.rowId === rid);
+  if (!r) return;
+  const c = casts.find(c => c.id === r.id);
+  const imgUrl = c?.styles?.[r.style]?.imageUrl || '';
+  const el = document.getElementById('thumb_'+rid);
+  if (!el) return;
+  if (imgUrl) { el.src = imgUrl; el.style.display='block'; el.nextElementSibling.style.display='none'; }
+  else { el.style.display='none'; el.nextElementSibling.style.display='flex'; }
+}
+
+function renderRows() {
+  const container = document.getElementById('castRows');
+  container.innerHTML = rows.map((r, i) => {
+    const label = LABELS[i];
+    const c = casts.find(c => c.id === r.id);
+    const styleOpts = Object.entries(c?.styles||{}).map(([k,v]) =>
+      \`<option value="\${k}" \${k===r.style?'selected':''}>\${v.description||k}</option>\`
+    ).join('');
+    const imgUrl = c?.styles?.[r.style]?.imageUrl || '';
+    const isFirst = i === 0;
+    return \`<div class="cast-row">
+      <span class="cast-label">\${label}</span>
+      <div class="cast-row-selects">
+        <div>
+          <label>キャラクター</label>
+          <select onchange="onCastChange(\${r.rowId},this.value)">
+            \${casts.map(c2=>\`<option value="\${c2.id}" \${c2.id===r.id?'selected':''}>\${c2.name}</option>\`).join('')}
+          </select>
+        </div>
+        <div>
+          <label>スタイル</label>
+          <select onchange="onStyleChange(\${r.rowId},this.value)">\${styleOpts}</select>
+        </div>
       </div>
-      <button class="pbtn" onclick="removeCast('\${s.id}')"><i class="fa fa-xmark"></i></button>
+      <img id="thumb_\${r.rowId}" src="\${imgUrl}" class="cast-thumb" style="\${imgUrl?'':'display:none'}" loading="lazy">
+      <div class="cast-thumb-empty" style="\${imgUrl?'display:none':''}">👤</div>
+      \${isFirst ? '' : \`<button class="cast-rm" onclick="removeRow(\${r.rowId})"><i class="fa fa-xmark"></i></button>\`}
     </div>\`;
   }).join('');
 }
@@ -356,7 +352,7 @@ async function generate() {
   const touchId = document.getElementById('touch').value;
   const touchPrompt = touchPresets.find(t => t.id === touchId)?.prompt || '';
   const finalPrompt = touchPrompt ? prompt + '. ' + touchPrompt : prompt;
-  const castRefs = selected.map(s => ({ id: s.id, style: s.style, label: s.label }));
+  const castRefs = rows.map((r, i) => ({ id: r.id, style: r.style, label: LABELS[i] })).filter(r => r.id);
 
   try {
     const res = await fetch('/api/image_gen/generate', {
@@ -397,8 +393,7 @@ async function generate() {
   btn.disabled = false;
 }
 
-renderCastGrid();
-renderCastPreview();
+addCastRow(); // 初期1行
 renderTouchPresets();
 </script>
 </body>
