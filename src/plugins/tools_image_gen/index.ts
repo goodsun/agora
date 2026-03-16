@@ -288,7 +288,7 @@ function renderRows() {
       </div>
       <img id="thumb_\${r.rowId}" src="\${imgUrl}" class="cast-thumb" style="\${imgUrl?'':'display:none'}" loading="lazy" onclick="openModal('\${imgUrl}')" title="クリックで拡大">
       <div class="cast-thumb-empty" style="\${imgUrl?'display:none':''}">👤</div>
-      \${isFirst ? '' : \`<button class="cast-rm" onclick="removeRow(\${r.rowId})"><i class="fa fa-xmark"></i></button>\`}
+      <button class="cast-rm" onclick="removeRow(\${r.rowId})"><i class="fa fa-xmark"></i></button>
     </div>\`;
   }).join('');
 }
@@ -470,9 +470,7 @@ if (saved && saved.rows && saved.rows.length > 0) {
   if (saved.touch) document.getElementById('touch').value = saved.touch;
   if (saved.model) document.getElementById('model').value = saved.model;
   if (saved.aspect) document.getElementById('aspect').value = saved.aspect;
-} else {
-  addCastRow(); // 初期1行
-}
+} // キャスト0行OK — プロンプトのみ生成も可能
 
 // 変更時に自動保存
 document.addEventListener('change', saveState);

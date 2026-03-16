@@ -10,8 +10,8 @@
   "default_style": "normal",
   "styles": {
     "normal": {
-      "description": "通常版 — 着物（デフォルト）",
-      "image": "main.jpg",
+      "description": "自然派 シャツ＋ホットパンツ",
+      "image": "natural.jpg",
       "overrides": [
         "prompt_features"
       ],
@@ -35,30 +35,22 @@
     },
     "casual": {
       "description": "カジュアル — カーディガン姿",
-      "image": "casual.png",
+      "image": "casual.jpg",
       "overrides": [
         "prompt_features"
       ],
       "prompt_features_override": "young Japanese-French woman with dark brown hair in a relaxed low ponytail with soft side-swept wispy bangs and loose face-framing strands, beige knit cardigan over white blouse, taupe straight-leg pants, rosy cheeks, gentle and intellectual expression"
     },
-    "normal": {
-      "description": "自然派 シャツ＋ホットパンツ",
-      "image": "natural.jpg",
-      "overrides": [
-        "prompt_features"
-      ],
-      "prompt_features_override": null
-    },
     "corporate": {
-      "description": "ビジネス — スーツ姿",
-      "image": "corporate.jpg",
+      "description": "original",
+      "image": "main.jpg",
       "overrides": [
         "prompt_features"
       ],
       "prompt_features_override": "young Japanese-French woman with dark brown hair pulled up in a neat bun with soft side-swept wispy bangs, navy blue business suit with white blouse, rosy cheeks, confident and professional expression"
     },
     "dressup": {
-      "description": "ドレスアップ — エメラルドグリーンドレス",
+      "description": "ドレスアップ",
       "image": "dressup.png",
       "overrides": [
         "prompt_features"
@@ -91,6 +83,7 @@
     },
     "4koma": {
       "description": "4コマ漫画 — Instagram投稿用",
+      "image": "pure.jpg",
       "prompt_features_override": null
     }
   },
