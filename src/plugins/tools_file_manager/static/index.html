@@ -287,6 +287,7 @@ async function openFile(idx) {
 async function compressFile() {
   const path = document.getElementById('filepath').textContent.trim();
   if (!path) return;
+  if (!confirm(`画像を軽量化しますか？（上書き保存されます）\n\n${path}`)) return;
   const btn = document.getElementById('compress-btn');
   btn.disabled = true;
   btn.textContent = '⏳ 処理中...';
