@@ -107,6 +107,10 @@ app.get('/casts/:id/:file', (req, res) => {
 import { imageGenRouter } from './plugins/image_gen';
 app.use('/api/image_gen', requireApiKey, imageGenRouter);
 
+// ── tools: image_gen UI ──
+import { toolsImageGenRouter } from './plugins/tools_image_gen';
+app.use('/tools/image_gen', toolsImageGenRouter);
+
 app.listen(PORT, () => {
   console.log(`agora listening on port ${PORT}`);
   console.log(`→ http://localhost:${PORT}/`);
