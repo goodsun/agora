@@ -39,6 +39,11 @@
       "id": "sketch",
       "label": "スケッチ風",
       "prompt": "pencil sketch style, loose expressive linework, monochrome"
+    },
+    {
+      "id": "semi_real_anime",
+      "label": "セミリアルアニメ",
+      "prompt": "semi-realistic anime style, detailed facial features, soft lighting"
     }
   ],
   "default": "manga_warm"
