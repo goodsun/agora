@@ -66,8 +66,9 @@ toolsImageGenRouter.get('/', (_req, res) => {
     .cast-row-selects{display:flex;flex-direction:column;gap:.4rem;flex:1;min-width:0}
     .cast-thumb{width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid #1e2d4a;flex-shrink:0;background:#16213e}
     .cast-thumb-empty{width:72px;height:72px;background:#16213e;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;color:#334455}
-    .cast-rm{background:none;border:none;color:#664455;cursor:pointer;font-size:1rem;flex-shrink:0;padding:.2rem}
-    .cast-rm:hover{color:#e94560}
+    .cast-row{position:relative}
+    .cast-rm{position:absolute;top:-7px;left:-7px;width:20px;height:20px;border-radius:50%;background:#e94560;border:2px solid #0a0e1a;color:#fff;cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;transition:.15s}
+    .cast-rm:hover{background:#ff2244;transform:scale(1.15)}
     .btn-add-cast{font-size:.82rem;padding:.45rem 1rem;background:#1a2a4a;border:1px solid #2244cc;border-radius:5px;color:#88aaee;cursor:pointer;margin-top:.3rem}
     .btn-add-cast:hover{background:#2a3a5a}
     .hint-text{font-size:.75rem;color:#445566;margin-top:.5rem}
