@@ -5,11 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>File Viewer</title>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: sans-serif; display: flex; height: 100vh; background: #1a1a2e; color: #eee; overflow: hidden; }
   #sidebar { width: 340px; min-width: 160px; max-width: 70vw; display: flex; flex-direction: column; flex-shrink: 0; }
   #search-box { padding: 10px; background: #16213e; }
+  #home-btn { display: block; padding: 6px 10px; margin-bottom: 8px; background: #0a1628; border: 1px solid #1e2d4a; border-radius: 5px; color: #7a9abf; font-size: 12px; text-decoration: none; }
+  #home-btn:hover { background: #111f38; color: #aaccee; }
   #search { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #444; background: #0f3460; color: #eee; font-size: 14px; }
   #filter-btns { display: flex; gap: 4px; margin-top: 8px; }
   .filter-btn { flex: 1; padding: 4px; border: 1px solid #444; border-radius: 4px; background: #0f3460; color: #aaa; cursor: pointer; font-size: 11px; }
@@ -80,6 +83,7 @@
 <body>
 <div id="sidebar">
   <div id="search-box">
+    <a id="home-btn" href="/"><i class="fa fa-chevron-left"></i> agora</a>
     <input id="search" type="text" placeholder="ファイル名・パスで検索..." oninput="renderList()">
     <div id="filter-btns">
       <button class="filter-btn active" onclick="setFilter('all',this)">All</button>

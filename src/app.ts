@@ -31,6 +31,7 @@ app.get('/', (_req, res) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>agora — commons for AI civilization</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0a0e1a; color: #e0e6f0; font-family: 'Georgia', serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
@@ -46,7 +47,7 @@ app.get('/', (_req, res) => {
     .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 2rem; }
     .tool-card { background: #111827; border: 1px solid #1e2d4a; border-radius: 8px; padding: 1rem 1.2rem; text-decoration: none; color: inherit; transition: .15s; display: flex; align-items: center; gap: .8rem; }
     .tool-card:hover { border-color: #4466aa; background: #151f35; }
-    .tool-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .tool-icon { font-size: 1.2rem; flex-shrink: 0; color: #7a9abf; }
     .tool-info .tname { font-size: .9rem; color: #c8b8ff; font-weight: 500; }
     .tool-info .tdesc { font-size: .75rem; color: #556677; margin-top: .2rem; }
     .section-label { font-size: .75rem; color: #445566; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .6rem; text-align: left; }
@@ -65,14 +66,14 @@ app.get('/', (_req, res) => {
     <div class="section-label">Tools</div>
     <div class="tools">
       <a href="/tools/image_gen/" class="tool-card">
-        <span class="tool-icon">🎨</span>
+        <span class="tool-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
         <div class="tool-info">
           <div class="tname">image_gen</div>
           <div class="tdesc">キャラ選択・背景合成・画像生成</div>
         </div>
       </a>
       <a href="/tools/file_manager/" class="tool-card">
-        <span class="tool-icon">📁</span>
+        <span class="tool-icon"><i class="fa-solid fa-folder-open"></i></span>
         <div class="tool-info">
           <div class="tname">file_manager</div>
           <div class="tdesc">Markdown・画像ビューア・横断検索</div>
