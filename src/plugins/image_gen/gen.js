@@ -39,9 +39,10 @@ async function genWithRefs(refList) {
     const b64 = fs.readFileSync(ref.path).toString('base64');
     parts.push({ inline_data: { mime_type: mimeType, data: b64 } });
     if (ref.type === 'background') {
-      parts.push({ text: '[This is the background setting/scene]' });
+      parts.push({ text: '[This is the background setting/scene. Keep this background exactly.]' });
     } else {
-      parts.push({ text: '[This is character ' + ref.label + ']' });
+      const charName = ref.name ? ref.label + ' (' + ref.name + ')' : ref.label;
+      parts.push({ text: '[This is character ' + charName + '. Reproduce this character\'s appearance faithfully in the output.]' });
     }
   }
   const refNote = refList.length > 0 ? ' Use the reference images as character design bases. Maintain each character visual style.' : '';

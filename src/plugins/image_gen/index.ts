@@ -111,7 +111,7 @@ imageGenRouter.post('/generate', (req, res) => {
   if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
 
   // cast_refs → refs配列を組み立て
-  let refsArr: Array<{path: string, label: string}> = [];
+  let refsArr: Array<{path: string, label: string, name?: string}> = [];
 
   // 背景画像をrefの先頭に追加
   const bg_filename = bg_fn ? String(bg_fn) : '';
@@ -129,7 +129,7 @@ imageGenRouter.post('/generate', (req, res) => {
         const imgFile = styleData.image || '';
         if (imgFile) {
           const candidate = path.join(CASTS_DIR, cr.id, imgFile);
-          if (fs.existsSync(candidate)) refsArr.push({ path: candidate, label: cr.label || cr.id });
+          if (fs.existsSync(candidate)) refsArr.push({ path: candidate, label: cr.label || cr.id, name: profile.name || cr.id });
         }
       } catch {}
     }
