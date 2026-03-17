@@ -203,6 +203,13 @@ app.get('/', (_req, res) => {
           <div class="tdesc">bibliotheke / metroon コミット履歴</div>
         </div>
       </a>
+      <a href="/tools/proposals/ui" class="tool-card">
+        <span class="tool-icon"><i class="fa-solid fa-scroll"></i></span>
+        <div class="tool-info">
+          <div class="tname">proposals</div>
+          <div class="tdesc">機能提案・ステータス一覧</div>
+        </div>
+      </a>
     </div>
 
     <div class="section-label">API</div>
@@ -276,6 +283,10 @@ app.use('/tools/image_gen', toolsImageGenRouter);
 import { gitRouter, gitUIRouter } from './plugins/tools_git';
 app.use('/api/git', gitRouter);
 app.use('/tools/git', gitUIRouter);
+
+import { proposalsRouter } from './plugins/tools_proposals';
+app.use('/api/proposals', proposalsRouter);
+app.use('/tools/proposals', proposalsRouter);
 
 // ── file_manager API + UI ──
 import { fileManagerRouter, fileManagerUIRouter } from './plugins/tools_file_manager';
