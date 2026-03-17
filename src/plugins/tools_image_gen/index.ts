@@ -100,8 +100,12 @@ toolsImageGenRouter.get('/', (_req, res) => {
     .api-key-row{display:flex;gap:.5rem;align-items:center;margin-bottom:1.5rem}
     .api-key-row input{flex:1;font-family:monospace;font-size:.75rem}
     .api-key-row .lock{font-size:.8rem;color:#556677;flex-shrink:0}
-    a.back{font-size:.8rem;color:#445566;text-decoration:none;display:inline-block;margin-bottom:1.5rem}
-    a.back:hover{color:#7a8aaa}
+    header{padding:16px 32px;border-bottom:1px solid #21262d;display:flex;align-items:center;gap:10px;margin-bottom:0}
+    header a{color:#8b949e;text-decoration:none;font-size:.85rem}
+    header a:hover{color:#c9d1d9}
+    .page-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:#e6edf3;letter-spacing:.08em}
+    .page-title span{color:#8b949e;font-size:.9em}
+    .main-content{padding:32px}
     /* モーダル */
     .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;cursor:pointer}
     .modal-overlay.open{display:flex}
@@ -119,9 +123,12 @@ toolsImageGenRouter.get('/', (_req, res) => {
     <img id="modalImg" src="" alt="">
   </div>
 
-  <a href="/" class="back"><i class="fa fa-arrow-left"></i> agora</a>
-  <h1><i class="fa fa-palette"></i> image_gen</h1>
-  <p class="subtitle">agora 共通画像生成 UI</p>
+  <header>
+    <a href="/"><i class="fa fa-circle-nodes"></i> agora</a>
+    <span style="color:#30363d">/</span>
+    <span class="page-title">image_gen</span>
+  </header>
+  <div class="main-content">
 
   <div class="api-key-row">
     <i class="fa fa-key lock"></i>
@@ -477,6 +484,7 @@ if (saved && saved.rows && saved.rows.length > 0) {
 document.addEventListener('change', saveState);
 document.getElementById('castRows').addEventListener('click', () => setTimeout(saveState, 100));
 </script>
+</div>
 </body>
 </html>`);
 });

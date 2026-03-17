@@ -213,27 +213,14 @@ app.get('/', (_req, res) => {
     </div>
 
     <div class="section-label">API</div>
-    <div class="endpoints">
-      <div class="ep">
-        <span class="method">GET</span>
-        <span class="path">/api/casts</span>
-        <span class="ep-desc">キャラクター一覧</span>
-      </div>
-      <div class="ep">
-        <span class="method">POST</span>
-        <span class="path">/api/image_gen/generate</span>
-        <span class="ep-desc">画像生成 <i class="fa fa-key" style="font-size:.75em;color:#445566"></i></span>
-      </div>
-      <div class="ep">
-        <span class="method">GET</span>
-        <span class="path">/api/image_gen/presets</span>
-        <span class="ep-desc">タッチ・モデルプリセット一覧</span>
-      </div>
-      <div class="ep">
-        <span class="method">GET</span>
-        <span class="path">/api/image_gen/scenes</span>
-        <span class="ep-desc">背景シーン一覧</span>
-      </div>
+    <div class="tools">
+      <a href="/api/index.html" class="tool-card">
+        <span class="tool-icon"><i class="fa-solid fa-book-open"></i></span>
+        <div class="tool-info">
+          <div class="tname">API仕様書</div>
+          <div class="tdesc">Swagger UI — OpenAPI 3.0</div>
+        </div>
+      </a>
     </div>
     <div class="footer">
       <em>bon-soleil Holdings — Rooted Cosmopolitanism</em><br>

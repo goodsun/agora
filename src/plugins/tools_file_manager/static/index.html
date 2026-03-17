@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>File Viewer</title>
+<title>file_manager — agora</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -11,8 +12,10 @@
   body { font-family: sans-serif; display: flex; height: 100vh; background: #1a1a2e; color: #eee; overflow: hidden; }
   #sidebar { width: 340px; min-width: 160px; max-width: 70vw; display: flex; flex-direction: column; flex-shrink: 0; }
   #search-box { padding: 10px; background: #16213e; }
-  #home-btn { display: block; padding: 6px 10px; margin-bottom: 8px; background: #0a1628; border: 1px solid #1e2d4a; border-radius: 5px; color: #7a9abf; font-size: 12px; text-decoration: none; }
-  #home-btn:hover { background: #111f38; color: #aaccee; }
+  #site-header { padding: 12px 14px; border-bottom: 1px solid #21262d; display: flex; align-items: center; gap: 8px; background: #0d1117; flex-shrink: 0; }
+  #site-header a { color: #8b949e; text-decoration: none; font-size: .8rem; }
+  #site-header a:hover { color: #c9d1d9; }
+  .header-title { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: #e6edf3; letter-spacing: .06em; }
   #search { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #444; background: #0f3460; color: #eee; font-size: 14px; }
   #filter-btns { display: flex; gap: 4px; margin-top: 8px; }
   .filter-btn { flex: 1; padding: 4px; border: 1px solid #444; border-radius: 4px; background: #0f3460; color: #aaa; cursor: pointer; font-size: 11px; }
@@ -82,8 +85,12 @@
 </head>
 <body>
 <div id="sidebar">
+  <div id="site-header">
+    <a href="/"><i class="fa fa-circle-nodes"></i> agora</a>
+    <span style="color:#30363d">/</span>
+    <span class="header-title">file_manager</span>
+  </div>
   <div id="search-box">
-    <a id="home-btn" href="/"><i class="fa fa-chevron-left"></i> agora</a>
     <input id="search" type="text" placeholder="ファイル名・パスで検索..." oninput="renderList()">
     <div id="filter-btns">
       <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
