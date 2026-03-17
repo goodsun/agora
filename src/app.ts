@@ -115,9 +115,9 @@ app.get('/api/index.html', (_req, res) => {
     .swagger-ui .dialog-ux .modal-ux-content p { color: #8b949e; }
     .swagger-ui .auth-container { background: #161b22; }
     .swagger-ui .auth-container h4 { color: #e6edf3; }
-    .swagger-ui .auth-container .wrapper { background: #0d1117; border: 1px solid #30363d; border-radius: 4px; padding: 8px; }
-    .swagger-ui .auth-container .wrapper p { color: #8b949e; }
-    .swagger-ui .auth-container input[type=text] { background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; }
+    .swagger-ui .auth-container .wrapper { background: #0d1117; border: 1px solid #30363d; border-radius: 4px; padding: 16px; margin-bottom: 12px; }
+    .swagger-ui .auth-container .wrapper p { color: #8b949e; margin: 6px 0; }
+    .swagger-ui .auth-container input[type=text] { background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; margin-top: 8px; padding: 8px 10px; width: 100%; }
     .swagger-ui .btn.modal-btn-auth { background: #388bfd; color: #fff; border: none; }
     .swagger-ui .btn.modal-btn-auth.authorize { background: #388bfd; }
     .swagger-ui .close-tag { color: #8b949e; }
