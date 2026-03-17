@@ -105,6 +105,23 @@ app.get('/api/index.html', (_req, res) => {
     /* コードブロック */
     .swagger-ui .highlight-code { background: #161b22; }
     .swagger-ui .microlight { background: #161b22 !important; color: #c9d1d9 !important; }
+
+    /* モーダル */
+    .swagger-ui .dialog-ux .modal-ux { background: #161b22; border: 1px solid #30363d; box-shadow: 0 8px 32px rgba(0,0,0,.6); }
+    .swagger-ui .dialog-ux .modal-ux-header { border-bottom: 1px solid #21262d; background: #161b22; }
+    .swagger-ui .dialog-ux .modal-ux-header h3 { color: #e6edf3; }
+    .swagger-ui .dialog-ux .modal-ux-content { background: #161b22; }
+    .swagger-ui .dialog-ux .modal-ux-content h4 { color: #c9d1d9; }
+    .swagger-ui .dialog-ux .modal-ux-content p { color: #8b949e; }
+    .swagger-ui .auth-container { background: #161b22; }
+    .swagger-ui .auth-container h4 { color: #e6edf3; }
+    .swagger-ui .auth-container .wrapper { background: #0d1117; border: 1px solid #30363d; border-radius: 4px; padding: 8px; }
+    .swagger-ui .auth-container .wrapper p { color: #8b949e; }
+    .swagger-ui .auth-container input[type=text] { background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; }
+    .swagger-ui .btn.modal-btn-auth { background: #388bfd; color: #fff; border: none; }
+    .swagger-ui .btn.modal-btn-auth.authorize { background: #388bfd; }
+    .swagger-ui .close-tag { color: #8b949e; }
+    .swagger-ui .dialog-ux .modal-ux-content .close-tag:hover { color: #e6edf3; }
   </style>
 </head>
 <body>
