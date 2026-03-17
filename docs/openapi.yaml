@@ -1,0 +1,304 @@
+openapi: "3.0.3"
+info:
+  title: agora API
+  description: |
+    bon-soleil Holdings の全AIエージェントが共有する基盤プラットフォーム agora の API仕様書。
+    
+    - キャラクター情報・画像取得は認証不要
+    - 画像生成・アップロードは `X-API-Key` ヘッダー必須
+  version: "0.1.0"
+  contact:
+    name: bon-soleil Holdings
+    url: https://agora.bon-soleil.com
+
+servers:
+  - url: https://agora.bon-soleil.com
+    description: Production
+  - url: http://localhost:8810
+    description: Local (alice-hetzner / jasmine)
+
+tags:
+  - name: system
+    description: システム
+  - name: casts
+    description: キャラクター
+  - name: image_gen
+    description: 画像生成
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    Cast:
+      type: object
+      properties:
+        id:
+          type: string
+          example: alice
+        name:
+          type: string
+          example: アリス・ルーズベルト・ロングワース
+        display_name:
+          type: string
+        default_style:
+          type: string
+          example: normal
+        styles:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              description:
+                type: string
+              image:
+                type: string
+        imageUrl:
+          type: string
+          example: https://agora.bon-soleil.com/casts/alice/main.jpg
+
+    GenerateRequest:
+      type: object
+      required:
+        - prompt
+      properties:
+        prompt:
+          type: string
+          description: 生成プロンプト
+          example: warm manga style. アリスが笑顔で立っている
+        cast_refs:
+          type: array
+          description: キャラクター参照配列（省略可・0件でプロンプト単体生成）
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: alice
+              style:
+                type: string
+                example: admiral
+              label:
+                type: string
+                example: A
+        touch:
+          type: string
+          description: 画風プリセットID
+          example: warm_manga
+        gen_model:
+          type: string
+          description: 生成モデル
+          enum:
+            - gemini-3-pro-image-preview
+            - gemini-2.5-flash-image
+            - imagen-4.0-fast-generate-001
+          default: gemini-2.5-flash-image
+        gen_aspect:
+          type: string
+          description: アスペクト比
+          enum: ["1:1", "9:16", "16:9", "4:3", "3:4"]
+          default: "1:1"
+        bg_filename:
+          type: string
+          description: 背景シーンファイル名
+
+    GenerateResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        filename:
+          type: string
+          example: gen_1773705397440.png
+        path:
+          type: string
+
+    TouchPreset:
+      type: object
+      properties:
+        id:
+          type: string
+          example: warm_manga
+        label:
+          type: string
+          example: 温かみマンガ調
+        prompt:
+          type: string
+
+paths:
+  /health:
+    get:
+      tags: [system]
+      summary: ヘルスチェック
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  name:
+                    type: string
+                  version:
+                    type: string
+
+  /api/casts:
+    get:
+      tags: [casts]
+      summary: キャラクター一覧
+      responses:
+        "200":
+          description: キャラクター一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cast"
+
+  /casts/{id}/{file}:
+    get:
+      tags: [casts]
+      summary: キャラクター画像配信
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: alice
+        - name: file
+          in: path
+          required: true
+          schema:
+            type: string
+          example: main.jpg
+      responses:
+        "200":
+          description: 画像ファイル
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not Found
+
+  /api/image_gen/presets:
+    get:
+      tags: [image_gen]
+      summary: タッチ・モデルプリセット一覧
+      responses:
+        "200":
+          description: プリセット一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  touch_presets:
+                    type: object
+                    properties:
+                      presets:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/TouchPreset"
+                  model_presets:
+                    type: object
+
+  /api/image_gen/scenes:
+    get:
+      tags: [image_gen]
+      summary: 背景シーン一覧
+      responses:
+        "200":
+          description: シーン一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    filename:
+                      type: string
+                    url:
+                      type: string
+
+  /api/image_gen/generate:
+    post:
+      tags: [image_gen]
+      summary: 画像生成
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateRequest"
+      responses:
+        "200":
+          description: 生成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateResponse"
+        "401":
+          description: 認証エラー
+        "500":
+          description: 生成失敗
+
+  /api/image_gen/upload_bg:
+    post:
+      tags: [image_gen]
+      summary: 背景シーン画像アップロード
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: アップロード成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  filename:
+                    type: string
+
+  /api/image_gen/img/{filename}:
+    get:
+      tags: [image_gen]
+      summary: 生成画像配信
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 画像ファイル
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary

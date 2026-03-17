@@ -23,6 +23,38 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true, name: 'agora', version: '0.1.0' });
 });
 
+// ── OpenAPI spec ──
+app.get('/api/openapi.yaml', (_req, res) => {
+  const yamlPath = path.join(__dirname, '../../docs/openapi.yaml');
+  res.setHeader('Content-Type', 'application/yaml');
+  res.sendFile(yamlPath);
+});
+
+// ── Swagger UI ──
+app.get('/api/index.html', (_req, res) => {
+  res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <title>agora API — Swagger UI</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script>
+    SwaggerUIBundle({
+      url: '/api/openapi.yaml',
+      dom_id: '#swagger-ui',
+      presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
+      layout: 'BaseLayout',
+      tryItOutEnabled: true,
+    });
+  </script>
+</body>
+</html>`);
+});
+
 // ── top / login page ──
 app.get('/', (_req, res) => {
   res.send(`<!DOCTYPE html>
