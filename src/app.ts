@@ -223,7 +223,10 @@ app.get('/', (_req, res) => {
     </div>
     <div class="footer">
       <em>bon-soleil Holdings — Rooted Cosmopolitanism</em><br>
-      根を張り、壁を溶かす。
+      根を張り、壁を溶かす。<br>
+      <a href="https://github.com/goodsun/agora" target="_blank" style="color:#445566;text-decoration:none;">
+        <i class="fab fa-github"></i> goodsun/agora
+      </a>
     </div>
   </div>
 </body>
