@@ -25,7 +25,7 @@ app.get('/health', (_req, res) => {
 
 // ── OpenAPI spec ──
 app.get('/api/openapi.yaml', (_req, res) => {
-  const yamlPath = path.join(__dirname, '../../docs/openapi.yaml');
+  const yamlPath = path.join(__dirname, '../docs/openapi.yaml');
   res.setHeader('Content-Type', 'application/yaml');
   res.sendFile(yamlPath);
 });
