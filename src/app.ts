@@ -196,6 +196,13 @@ app.get('/', (_req, res) => {
           <div class="tdesc">Markdown・画像ビューア・横断検索</div>
         </div>
       </a>
+      <a href="/tools/git/" class="tool-card">
+        <span class="tool-icon"><i class="fa-solid fa-code-branch"></i></span>
+        <div class="tool-info">
+          <div class="tname">git viewer</div>
+          <div class="tdesc">bibliotheke / metroon コミット履歴</div>
+        </div>
+      </a>
     </div>
 
     <div class="section-label">API</div>
@@ -265,6 +272,10 @@ app.use('/api/image_gen', requireApiKey, imageGenRouter);
 // ── tools: image_gen UI ──
 import { toolsImageGenRouter } from './plugins/tools_image_gen';
 app.use('/tools/image_gen', toolsImageGenRouter);
+
+import { gitRouter, gitUIRouter } from './plugins/tools_git';
+app.use('/api/git', gitRouter);
+app.use('/tools/git', gitUIRouter);
 
 // ── file_manager API + UI ──
 import { fileManagerRouter, fileManagerUIRouter } from './plugins/tools_file_manager';
