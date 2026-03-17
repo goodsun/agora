@@ -53,6 +53,21 @@ const bgUpload = multer({
   }
 });
 
+// GET /api/image_gen/presets — タッチ・モデルプリセット一覧（認証不要）
+imageServeRouter.get('/presets', (_req, res) => {
+  const PRESETS_DIR = '/srv/shared/metroon/data/presets';
+  const result: Record<string, unknown> = {};
+  const files = ['touch_presets.json', 'model_presets.json'];
+  for (const f of files) {
+    const fp = path.join(PRESETS_DIR, f);
+    if (fs.existsSync(fp)) {
+      try { result[f.replace('.json', '')] = JSON.parse(fs.readFileSync(fp, 'utf-8')); }
+      catch { result[f.replace('.json', '')] = null; }
+    }
+  }
+  res.json(result);
+});
+
 // GET /api/image_gen/scenes — シーン一覧（認証不要）
 imageServeRouter.get('/scenes', (_req, res) => {
   const IMG_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
