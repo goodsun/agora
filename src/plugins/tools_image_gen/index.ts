@@ -9,7 +9,7 @@ const CASTS_DIR = '/srv/shared/metroon/data/casts';
 
 function loadTouchPresets() {
   try {
-    const f = '/srv/shared/metroon/data/image_gen/touch_presets.json';
+    const f = '/srv/shared/metroon/data/presets/touch_presets.json';
     return JSON.parse(fs.readFileSync(f, 'utf-8'));
   } catch { return { presets: [], default: '' }; }
 }
