@@ -95,6 +95,11 @@ app.get('/', (_req, res) => {
       </div>
       <div class="ep">
         <span class="method">GET</span>
+        <span class="path">/api/image_gen/presets</span>
+        <span class="ep-desc">タッチ・モデルプリセット一覧</span>
+      </div>
+      <div class="ep">
+        <span class="method">GET</span>
         <span class="path">/api/image_gen/scenes</span>
         <span class="ep-desc">背景シーン一覧</span>
       </div>
