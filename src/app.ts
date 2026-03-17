@@ -35,9 +35,77 @@ app.get('/api/index.html', (_req, res) => {
   res.send(`<!DOCTYPE html>
 <html>
 <head>
-  <title>agora API — Swagger UI</title>
+  <title>agora API</title>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; }
+
+    /* ヘッダー */
+    .swagger-ui .topbar { background: #0d1117; border-bottom: 1px solid #21262d; padding: 16px 0; }
+    .swagger-ui .topbar-wrapper { display: flex; align-items: center; gap: 16px; }
+    .swagger-ui .topbar-wrapper .link { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: #e6edf3 !important; text-decoration: none; letter-spacing: .1em; }
+    .swagger-ui .topbar-wrapper .link::after { content: ' API'; font-size: 0.8em; color: #8b949e; }
+    .swagger-ui .topbar-wrapper img { display: none; }
+
+    /* 背景・テキスト */
+    .swagger-ui { background: #0d1117; color: #c9d1d9; }
+    .swagger-ui .wrapper { background: #0d1117; }
+    .swagger-ui .info { margin: 40px 0 24px; }
+    .swagger-ui .info .title { font-family: 'Cormorant Garamond', serif; color: #e6edf3; font-size: 2rem; letter-spacing: .05em; }
+    .swagger-ui .info p, .swagger-ui .info li { color: #8b949e; }
+    .swagger-ui .info a { color: #58a6ff; }
+
+    /* スキーマ・ボックス */
+    .swagger-ui .scheme-container { background: #161b22; border: 1px solid #21262d; box-shadow: none; padding: 16px 24px; }
+    .swagger-ui .servers > label select { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; border-radius: 4px; }
+    .swagger-ui select { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; }
+
+    /* タグセクション */
+    .swagger-ui .opblock-tag { color: #e6edf3; border-bottom: 1px solid #21262d; font-family: 'Inter', sans-serif; font-weight: 500; }
+    .swagger-ui .opblock-tag:hover { background: #161b22; }
+
+    /* エンドポイントブロック */
+    .swagger-ui .opblock { background: #161b22; border: 1px solid #21262d; border-radius: 6px; margin-bottom: 8px; box-shadow: none; }
+    .swagger-ui .opblock .opblock-summary { border-bottom: none; }
+    .swagger-ui .opblock .opblock-summary-description { color: #8b949e; }
+    .swagger-ui .opblock.opblock-get { border-left: 3px solid #388bfd; }
+    .swagger-ui .opblock.opblock-post { border-left: 3px solid #3fb950; }
+    .swagger-ui .opblock.opblock-get .opblock-summary-method { background: #1f3a5f; color: #58a6ff; }
+    .swagger-ui .opblock.opblock-post .opblock-summary-method { background: #1a3a2a; color: #3fb950; }
+    .swagger-ui .opblock-body { background: #0d1117; }
+    .swagger-ui .opblock-description-wrapper p { color: #8b949e; }
+
+    /* Authorizeボタン */
+    .swagger-ui .btn.authorize { background: transparent; color: #58a6ff; border: 1px solid #30363d; }
+    .swagger-ui .btn.authorize svg { fill: #58a6ff; }
+    .swagger-ui .btn.authorize:hover { background: #1f3a5f; }
+
+    /* テーブル・モデル */
+    .swagger-ui table thead tr th { color: #8b949e; border-bottom: 1px solid #21262d; }
+    .swagger-ui table tbody tr td { color: #c9d1d9; border-bottom: 1px solid #21262d; }
+    .swagger-ui .model-box { background: #161b22; }
+    .swagger-ui section.models { border: 1px solid #21262d; background: #161b22; }
+    .swagger-ui section.models .model-container { background: #0d1117; }
+    .swagger-ui .model { color: #c9d1d9; }
+
+    /* Try it out */
+    .swagger-ui .btn { border-radius: 4px; }
+    .swagger-ui .btn.try-out__btn { background: transparent; color: #58a6ff; border: 1px solid #30363d; }
+    .swagger-ui .btn.execute { background: #388bfd; color: #fff; border: none; }
+    .swagger-ui .responses-inner { background: #0d1117; }
+    .swagger-ui .response-col_status { color: #3fb950; }
+    .swagger-ui textarea { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; }
+    .swagger-ui input[type=text], .swagger-ui input[type=password] { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; }
+
+    /* コードブロック */
+    .swagger-ui .highlight-code { background: #161b22; }
+    .swagger-ui .microlight { background: #161b22 !important; color: #c9d1d9 !important; }
+  </style>
 </head>
 <body>
   <div id="swagger-ui"></div>
