@@ -49,7 +49,8 @@ toolsImageGenRouter.get('/', (_req, res) => {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#0a0e1a;color:#e0e6f0;font-family:'Segoe UI',sans-serif;min-height:100vh;padding:2rem}
+    body{background:#0a0e1a;color:#e0e6f0;font-family:'Segoe UI',sans-serif;min-height:100vh;padding:0}
+    .main-content{padding:2rem}
     h1{font-size:1.4rem;font-weight:300;letter-spacing:.15em;color:#c8b8ff;margin-bottom:.3rem}
     .subtitle{font-size:.8rem;color:#445566;margin-bottom:2rem}
     .layout{display:grid;grid-template-columns:450px 1fr;gap:1.5rem;max-width:1200px}
