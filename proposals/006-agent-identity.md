@@ -92,6 +92,26 @@ agora 側：
 
 ---
 
+## metroon ディレクトリ設計（Phase 2想定）
+
+```
+metroon/
+  scripts/          ← public（全員参照可）
+  skills/           ← public（全員参照可）
+  docs/             ← public（運用ガイド等）
+  data/             ← public（casts, presets等）
+  private/
+    alice/          ← alice公開鍵でのみアクセス可
+    mephi/          ← メフィ専用（監査レポート等）
+    bizeny/         ← 彰子専用（IGトークン等）
+    teddy/          ← テディ専用
+    ...
+```
+
+- `private/<id>/` は対応する公開鍵で認証されたエージェントのみ読み書き可
+- マスター（管理者）は全 private にアクセス可
+- **公文書館に金庫室が付いた構造**
+
 ## 備考
 
 > 「社員証として公開鍵を登録すれば使えるみたいにできるんじゃないw」
