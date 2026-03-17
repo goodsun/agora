@@ -22,6 +22,8 @@ tags:
     description: システム
   - name: casts
     description: キャラクター
+  - name: file_manager
+    description: ファイル管理・検索（エージェント向けディスカバリー含む）
   - name: image_gen
     description: 画像生成
 
@@ -187,6 +189,69 @@ paths:
               schema:
                 type: string
                 format: binary
+        "404":
+          description: Not Found
+
+  /api/file_manager/search:
+    get:
+      tags: [file_manager]
+      summary: ファイル検索（エージェント向け）
+      parameters:
+        - name: q
+          in: query
+          description: 検索キーワード（ファイル名・パス）
+          schema:
+            type: string
+          example: socks-proxy
+        - name: root
+          in: query
+          description: 検索対象リポジトリ（bibliotheke / metroon など）
+          schema:
+            type: string
+          example: metroon
+      responses:
+        "200":
+          description: ファイル一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    path:
+                      type: string
+                    name:
+                      type: string
+                    type:
+                      type: string
+
+  /api/file_manager/read:
+    get:
+      tags: [file_manager]
+      summary: ファイル内容取得（エージェント向け）
+      parameters:
+        - name: path
+          in: query
+          required: true
+          description: フルパス（SEARCH_ROOTS範囲内のみ）
+          schema:
+            type: string
+          example: /srv/shared/metroon/skills/socks-proxy/SKILL.md
+      responses:
+        "200":
+          description: ファイル内容
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                  content:
+                    type: string
+        "403":
+          description: アクセス拒否（ROOTS範囲外）
         "404":
           description: Not Found
 

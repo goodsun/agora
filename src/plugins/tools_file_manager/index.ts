@@ -69,6 +69,35 @@ function walkDir(dir: string, results: any[]) {
   }
 }
 
+// API: GET /api/file_manager/search — ファイル名・パスでキーワード検索（エージェント向け）
+fileManagerRouter.get('/search', (_req, res) => {
+  const q = String(_req.query.q || '').toLowerCase();
+  const root = String(_req.query.root || '').toLowerCase(); // bibliotheke / metroon 等
+  const results: any[] = [];
+  for (const r of SEARCH_ROOTS) {
+    if (root && !r.toLowerCase().includes(root)) continue;
+    if (!fs.existsSync(r)) continue;
+    walkDir(r, results);
+  }
+  const filtered = q
+    ? results.filter(f => f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q))
+    : results;
+  filtered.sort((a, b) => a.path.localeCompare(b.path));
+  res.json(filtered);
+});
+
+// API: GET /api/file_manager/read — ファイル内容取得（テキスト・md・json のみ、エージェント向け）
+fileManagerRouter.get('/read', (req, res) => {
+  const p = String(req.query.path || '');
+  if (!p || !fs.existsSync(p) || !fs.statSync(p).isFile()) return res.status(404).json({ error: 'not found' });
+  try { if (!isSafePath(p)) return res.status(403).json({ error: 'forbidden' }); } catch { return res.status(403).json({ error: 'forbidden' }); }
+  const ext = path.extname(p).toLowerCase();
+  if (IMAGE_EXTS.has(ext)) return res.status(400).json({ error: 'use /file for images' });
+  if (!ALLOWED_EXTS.has(ext)) return res.status(403).json({ error: 'extension not allowed' });
+  const content = fs.readFileSync(p, 'utf-8');
+  res.json({ path: p, content });
+});
+
 // API: GET /api/file_manager/file
 fileManagerRouter.get('/file', (req, res) => {
   const p = String(req.query.path || '');
