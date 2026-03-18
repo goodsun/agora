@@ -140,6 +140,8 @@ imageGenRouter.post('/generate', (req, res) => {
   const filename = `gen_${Date.now()}.png`;
   const outPath = path.join(OUT_DIR, filename);
 
+  console.log('[image_gen] refsArr:', JSON.stringify(refsArr.map(r => ({label:r.label, name:(r as any).name}))));
+
   const args = [
     GEN_SCRIPT, prompt, outPath, apiKey,
     JSON.stringify(refsArr), model, aspect
