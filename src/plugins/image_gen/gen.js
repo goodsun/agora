@@ -73,7 +73,7 @@ async function genWithRefs(refList) {
   const logDir = '/srv/shared/metroon/private/system/logs/api';
   try {
     if (fs.existsSync(logDir)) {
-      const logFile = logDir + '/' + new Date().toISOString().slice(0,10) + '.jsonl';
+      const logFile = logDir + '/nanobanana_gen_' + new Date().toISOString().slice(0,10) + '.jsonl';
       fs.appendFileSync(logFile, JSON.stringify(logPayload) + '\n');
     }
   } catch(e) { console.warn('[LOG WRITE FAILED]', e.message); }
