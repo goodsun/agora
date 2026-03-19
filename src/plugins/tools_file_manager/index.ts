@@ -31,26 +31,35 @@ function express_static_handler() {
 }
 
 // API: GET /api/file_manager/files
-fileManagerRouter.get('/files', (_req, res) => {
+fileManagerRouter.get('/files', (req: Request, res: Response) => {
+  // 認証状態を確認（あれば private/ も含める）
+  const cookieToken = (req as any).cookies?.agora_session;
+  const bearerToken = req.headers.authorization?.replace('Bearer ', '');
+  const token = cookieToken || bearerToken;
+  const session = token ? verifySessionToken(token) : null;
+  const allowPrivate = !!session;
+
   const results: any[] = [];
   for (const root of SEARCH_ROOTS) {
     if (!fs.existsSync(root)) continue;
-    walkDir(root, results);
+    walkDir(root, results, allowPrivate);
   }
   results.sort((a, b) => a.path.localeCompare(b.path));
   res.json(results);
 });
 
-function walkDir(dir: string, results: any[]) {
+function walkDir(dir: string, results: any[], allowPrivate = false) {
   let entries: string[];
   try { entries = fs.readdirSync(dir); } catch { return; }
   for (const entry of entries) {
     if (entry.startsWith('.') || entry === 'node_modules') continue;
     const full = path.join(dir, entry);
+    // private/ ディレクトリは認証済みの場合のみ走査
+    if (full.includes('/private/') && !allowPrivate) continue;
     let stat: fs.Stats;
     try { stat = fs.statSync(full); } catch { continue; }
     if (stat.isDirectory()) {
-      walkDir(full, results);
+      walkDir(full, results, allowPrivate);
     } else {
       const ext = path.extname(entry).toLowerCase();
       if (!ALLOWED_EXTS.has(ext)) continue;
@@ -71,14 +80,20 @@ function walkDir(dir: string, results: any[]) {
 }
 
 // API: GET /api/file_manager/search — ファイル名・パスでキーワード検索（エージェント向け）
-fileManagerRouter.get('/search', (_req, res) => {
-  const q = String(_req.query.q || '').toLowerCase();
-  const root = String(_req.query.root || '').toLowerCase(); // bibliotheke / metroon 等
+fileManagerRouter.get('/search', (req: Request, res: Response) => {
+  const q = String(req.query.q || '').toLowerCase();
+  const root = String(req.query.root || '').toLowerCase();
+  const cookieToken = (req as any).cookies?.agora_session;
+  const bearerToken = req.headers.authorization?.replace('Bearer ', '');
+  const token = cookieToken || bearerToken;
+  const session = token ? verifySessionToken(token) : null;
+  const allowPrivate = !!session;
+
   const results: any[] = [];
   for (const r of SEARCH_ROOTS) {
     if (root && !r.toLowerCase().includes(root)) continue;
     if (!fs.existsSync(r)) continue;
-    walkDir(r, results);
+    walkDir(r, results, allowPrivate);
   }
   const filtered = q
     ? results.filter(f => f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q))
