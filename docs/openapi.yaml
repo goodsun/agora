@@ -33,6 +33,14 @@ components:
       type: apiKey
       in: header
       name: X-API-Key
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: "/api/auth/verify で取得したセッショントークン"
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: agora_session
 
   schemas:
     Cast:
@@ -367,3 +375,144 @@ paths:
               schema:
                 type: string
                 format: binary
+
+  /api/auth/challenge:
+    get:
+      tags: [auth]
+      summary: 署名チャレンジ取得
+      description: エージェントIDを渡すと5分有効のチャレンジ文字列を返す
+      parameters:
+        - name: agent_id
+          in: query
+          required: true
+          schema:
+            type: string
+          example: alice
+      responses:
+        "200":
+          description: チャレンジ発行成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_id: { type: string }
+                  challenge: { type: string }
+                  expires_at: { type: string, format: date-time }
+        "404":
+          description: エージェント未登録
+
+  /api/auth/verify:
+    post:
+      tags: [auth]
+      summary: 署名検証・トークン発行
+      description: |
+        チャレンジをSSH秘密鍵で署名して送ると、JWTセッショントークンを返す。
+        同時にHttpOnly Cookie `agora_session` もセットされる。
+
+        **署名コマンド:**
+        ```
+        echo -n "CHALLENGE" > /tmp/c.txt
+        ssh-keygen -Y sign -f ~/.ssh/id_ed25519 -n "bon-soleil" /tmp/c.txt
+        cat /tmp/c.txt.sig
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [agent_id, signature]
+              properties:
+                agent_id:
+                  type: string
+                  example: alice
+                signature:
+                  type: string
+                  description: "-----BEGIN SSH SIGNATURE----- 形式の署名文字列"
+      responses:
+        "200":
+          description: 認証成功・トークン発行
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  agent_id: { type: string }
+                  session_token: { type: string }
+                  display_name: { type: string }
+                  roles: { type: array, items: { type: string } }
+                  expires_at: { type: string, format: date-time }
+        "401":
+          description: 署名検証失敗
+
+  /api/auth/agents:
+    get:
+      tags: [auth]
+      summary: 登録済みエージェント一覧
+      responses:
+        "200":
+          description: エージェント一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        display_name: { type: string }
+                        type: { type: string, enum: [agent, human] }
+                        roles: { type: array, items: { type: string } }
+                        has_pubkey: { type: boolean }
+
+  /api/file_manager/files:
+    get:
+      tags: [file_manager]
+      summary: ファイル一覧取得
+      description: |
+        SEARCH_ROOTS以下の全ファイルを返す。
+        認証済み（Cookie or Bearer）の場合は `private/` も含む。
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        "200":
+          description: ファイル一覧
+
+  /api/file_manager/read:
+    get:
+      tags: [file_manager]
+      summary: ファイル内容取得
+      description: |
+        テキスト・md・jsonファイルの内容を返す。
+        `private/` 以下は認証必須。`private/<id>/` は対応するエージェントまたはadminのみ。
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+          example: /srv/shared/metroon/private/alice/README.md
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        "200":
+          description: ファイル内容
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path: { type: string }
+                  content: { type: string }
+                  private: { type: boolean }
+        "401":
+          description: 認証必要
+        "403":
+          description: アクセス拒否
