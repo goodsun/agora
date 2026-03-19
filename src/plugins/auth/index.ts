@@ -231,17 +231,30 @@ async function getChallenge() {
   document.getElementById('challenge-val').textContent = d.challenge;
   document.getElementById('challenge-area').style.display = 'block';
 
-  // ワンライナー表示
-  const oneliner = 'echo -n "' + d.challenge + '" > /tmp/c.txt && ssh-keygen -Y sign -f ~/.ssh/id_rsa -n "bon-soleil" /tmp/c.txt && cat /tmp/c.txt.sig';
-  document.getElementById('step-box').innerHTML =
-    '<strong>ターミナルで実行してください</strong><br>' +
-    '<div style="margin-top:8px;background:#0d1117;border:1px solid #30363d;border-radius:4px;padding:10px;display:flex;align-items:center;gap:8px">' +
-      '<code id="oneliner-code" style="flex:1;font-size:.75rem;color:#58a6ff;word-break:break-all">' + oneliner + '</code>' +
-      '<button onclick="navigator.clipboard.writeText(document.getElementById(\'oneliner-code\').textContent);this.textContent=\'✓コピー済み\'" style="background:#21262d;border:1px solid #30363d;color:#8b949e;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:.75rem;white-space:nowrap">コピー</button>' +
-    '</div>' +
-    '<div style="margin-top:8px;color:#8b949e;font-size:.75rem">' +
-      'id_ed25519 の場合は <code>-f ~/.ssh/id_ed25519</code> に変更してください' +
-    '</div>';
+  // ワンライナー表示（グローバル変数経由でonclickから参照）
+  window._agora_oneliner = 'echo -n "' + d.challenge + '" > /tmp/c.txt && ssh-keygen -Y sign -f ~/.ssh/id_rsa -n "bon-soleil" /tmp/c.txt && cat /tmp/c.txt.sig';
+  const box = document.getElementById('step-box');
+  box.innerHTML = '';
+  const title = document.createElement('strong');
+  title.textContent = 'ターミナルで実行してください';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'margin-top:8px;background:#0d1117;border:1px solid #30363d;border-radius:4px;padding:10px;display:flex;align-items:center;gap:8px';
+  const code = document.createElement('code');
+  code.style.cssText = 'flex:1;font-size:.75rem;color:#58a6ff;word-break:break-all';
+  code.textContent = window._agora_oneliner;
+  const btn = document.createElement('button');
+  btn.textContent = 'コピー';
+  btn.style.cssText = 'background:#21262d;border:1px solid #30363d;color:#8b949e;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:.75rem;white-space:nowrap';
+  btn.onclick = function() { navigator.clipboard.writeText(window._agora_oneliner); this.textContent = '✓コピー済み'; };
+  wrap.appendChild(code);
+  wrap.appendChild(btn);
+  const note = document.createElement('div');
+  note.style.cssText = 'margin-top:8px;color:#8b949e;font-size:.75rem';
+  note.innerHTML = 'id_ed25519 の場合は <code>-f ~/.ssh/id_ed25519</code> に変更してください';
+  box.appendChild(title);
+  box.appendChild(document.createElement('br'));
+  box.appendChild(wrap);
+  box.appendChild(note);
 }
 
 async function verify() {
