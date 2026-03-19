@@ -232,17 +232,16 @@ async function getChallenge() {
   document.getElementById('challenge-area').style.display = 'block';
 
   // ワンライナー表示
-  const oneliner = \`echo -n "\${d.challenge}" > /tmp/c.txt && ssh-keygen -Y sign -f ~/.ssh/id_rsa -n "bon-soleil" /tmp/c.txt && cat /tmp/c.txt.sig\`;
-  document.getElementById('step-box').innerHTML = \`
-    <strong>ターミナルで実行してください</strong><br>
-    <div style="margin-top:8px;background:#0d1117;border:1px solid #30363d;border-radius:4px;padding:10px;display:flex;align-items:center;gap:8px">
-      <code style="flex:1;font-size:.75rem;color:#58a6ff;word-break:break-all">\${oneliner}</code>
-      <button onclick="navigator.clipboard.writeText(\`\${oneliner}\`);this.textContent='✓コピー済み'" style="background:#21262d;border:1px solid #30363d;color:#8b949e;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:.75rem;white-space:nowrap">コピー</button>
-    </div>
-    <div style="margin-top:8px;color:#8b949e;font-size:.75rem">
-      id_ed25519 の場合は <code>-f ~/.ssh/id_ed25519</code> に変更してください
-    </div>
-  \`;
+  const oneliner = 'echo -n "' + d.challenge + '" > /tmp/c.txt && ssh-keygen -Y sign -f ~/.ssh/id_rsa -n "bon-soleil" /tmp/c.txt && cat /tmp/c.txt.sig';
+  document.getElementById('step-box').innerHTML =
+    '<strong>ターミナルで実行してください</strong><br>' +
+    '<div style="margin-top:8px;background:#0d1117;border:1px solid #30363d;border-radius:4px;padding:10px;display:flex;align-items:center;gap:8px">' +
+      '<code id="oneliner-code" style="flex:1;font-size:.75rem;color:#58a6ff;word-break:break-all">' + oneliner + '</code>' +
+      '<button onclick="navigator.clipboard.writeText(document.getElementById(\'oneliner-code\').textContent);this.textContent=\'✓コピー済み\'" style="background:#21262d;border:1px solid #30363d;color:#8b949e;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:.75rem;white-space:nowrap">コピー</button>' +
+    '</div>' +
+    '<div style="margin-top:8px;color:#8b949e;font-size:.75rem">' +
+      'id_ed25519 の場合は <code>-f ~/.ssh/id_ed25519</code> に変更してください' +
+    '</div>';
 }
 
 async function verify() {
