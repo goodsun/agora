@@ -6,6 +6,33 @@ import * as path from 'path';
 
 export const router = Router();
 
+// トークン検証ユーティリティ（他プラグインから使用可能）
+export function verifySessionToken(token: string): { agent_id: string; roles: string[]; private_access: string[] } | null {
+  try {
+    const secret = process.env.AGORA_API_KEY || 'default_secret';
+    const [payload, hmac] = token.split('.');
+    if (!payload || !hmac) return null;
+    const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+    if (expected !== hmac) return null;
+    const data = JSON.parse(Buffer.from(payload, 'base64').toString('utf-8'));
+    if (Date.now() > data.expires_at) return null;
+    return data;
+  } catch { return null; }
+}
+
+// 認証済みかチェックするミドルウェア
+export function requireAuth(req: any, res: any, next: any) {
+  // Cookie優先、次にAuthorizationヘッダー
+  const cookieToken = req.cookies?.agora_session;
+  const bearerToken = req.headers.authorization?.replace('Bearer ', '');
+  const token = cookieToken || bearerToken;
+  if (!token) return res.status(401).json({ error: 'authentication required', hint: 'Visit /tools/auth/ to sign in' });
+  const session = verifySessionToken(token);
+  if (!session) return res.status(401).json({ error: 'invalid or expired token' });
+  req.agora_session = session;
+  next();
+}
+
 const AGENTS_DIR = '/srv/shared/metroon/data/agents';
 const challenges = new Map<string, { challenge: string; expires: number }>();
 
@@ -103,6 +130,15 @@ router.post('/api/auth/verify', (req: Request, res: Response) => {
   const secret = process.env.AGORA_API_KEY || 'default_secret';
   const hmac = crypto.createHmac('sha256', secret).update(token).digest('hex');
   const sessionToken = `${token}.${hmac}`;
+
+  // HttpOnly Cookieにセット（ブラウザ用）
+  res.cookie('agora_session', sessionToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000, // 24時間
+    path: '/',
+  });
 
   res.json({
     ok: true,
@@ -272,7 +308,8 @@ async function verify() {
     area.innerHTML = \`<div class="result success">
       <i class="fa fa-circle-check" style="color:#3fb950"></i> <strong>\${d.display_name}</strong> として認証成功
       <div style="font-size:.8rem;color:#8b949e;margin-top:6px">ロール: \${d.roles.join(', ')} | 有効期限: \${new Date(d.expires_at).toLocaleString('ja-JP')}</div>
-      <div class="token-val">\${d.session_token}</div>
+      <div style="font-size:.75rem;color:#8b949e;margin-top:6px"><i class="fa fa-cookie-bite"></i> セッションCookieを保存しました（24時間有効）</div>
+      <div style="font-size:.75rem;color:#484f58;margin-top:4px">エージェントAPI用トークン: <span class="token-val">\${d.session_token.slice(0,40)}...</span></div>
     </div>\`;
   } else {
     area.innerHTML = \`<div class="result error"><i class="fa fa-circle-xmark" style="color:#f85149"></i> 認証失敗: \${d.error}</div>\`;

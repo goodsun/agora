@@ -8,6 +8,8 @@ const PORT = process.env.AGORA_PORT || 8810;
 const AGORA_ROOT = path.resolve(__dirname, '..');
 
 app.use(express.json());
+import cookieParser from 'cookie-parser';
+app.use(cookieParser());
 
 // ── API Key 認証ミドルウェア ──
 function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
