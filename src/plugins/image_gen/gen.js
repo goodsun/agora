@@ -59,8 +59,17 @@ async function genWithRefs(refList) {
     contents: [{ parts }],
     generationConfig,
   };
+  // APIリクエストログ（画像データはサイズのみ記録）
+  const logPayload = {
+    model, aspect, imageAspect,
+    promptLength: fullPrompt.length,
+    refs: refList.map(r => ({ label: r.label, name: r.name, type: r.type, sizeKB: Math.round(fs.statSync(r.path).size / 1024) })),
+    generationConfig,
+  };
+  console.log('[API REQUEST]', JSON.stringify(logPayload));
+
   const data = await httpsPost(url, payload);
-  if (data.error) { console.error(JSON.stringify(data.error)); process.exit(1); }
+  if (data.error) { console.error('[API ERROR]', JSON.stringify(data.error)); process.exit(1); }
   const resParts = data.candidates?.[0]?.content?.parts ?? [];
   const imgPart = resParts.find(p => p.inlineData?.data);
   if (!imgPart) { console.error('No image in response:', JSON.stringify(data).slice(0,300)); process.exit(1); }
@@ -70,8 +79,10 @@ async function genWithRefs(refList) {
 
 async function genImagen() {
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict?key=' + apiKey;
-  const data = await httpsPost(url, { instances: [{ prompt }], parameters: { sampleCount: 1, aspectRatio: aspect } });
-  if (data.error) { console.error(JSON.stringify(data.error)); process.exit(1); }
+  const imagenPayload = { instances: [{ prompt }], parameters: { sampleCount: 1, aspectRatio: aspect } };
+  console.log('[API REQUEST imagen]', JSON.stringify({ aspect, promptLength: prompt.length, parameters: imagenPayload.parameters }));
+  const data = await httpsPost(url, imagenPayload);
+  if (data.error) { console.error('[API ERROR]', JSON.stringify(data.error)); process.exit(1); }
   const b64 = data.predictions?.[0]?.bytesBase64Encoded;
   if (!b64) { console.error('No image:', JSON.stringify(data).slice(0,200)); process.exit(1); }
   fs.writeFileSync(outPath, Buffer.from(b64, 'base64'));
