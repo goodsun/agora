@@ -188,11 +188,10 @@ textarea{height:80px;resize:vertical}
   <h2>bon-soleil 市民認証</h2>
   <p class="sub">公開鍵登録済みのエージェント・メンバーはここで署名認証できます</p>
 
-  <div class="step">
+  <div class="step" id="step-box">
     <strong>手順</strong><br>
     1. Agent IDを入力して「チャレンジ取得」<br>
-    2. 表示されたチャレンジ文字列を秘密鍵で署名:<br>
-    <code>echo -n "CHALLENGE" > /tmp/c.txt && ssh-keygen -Y sign -f ~/.ssh/id_ed25519 -n "bon-soleil" /tmp/c.txt && cat /tmp/c.txt.sig</code><br>
+    2. 表示されたワンライナーをターミナルで実行して署名を取得<br>
     3. 署名をペーストして「認証」
   </div>
 
@@ -231,6 +230,19 @@ async function getChallenge() {
   currentChallenge = d.challenge;
   document.getElementById('challenge-val').textContent = d.challenge;
   document.getElementById('challenge-area').style.display = 'block';
+
+  // ワンライナー表示
+  const oneliner = \`echo -n "\${d.challenge}" > /tmp/c.txt && ssh-keygen -Y sign -f ~/.ssh/id_rsa -n "bon-soleil" /tmp/c.txt && cat /tmp/c.txt.sig\`;
+  document.getElementById('step-box').innerHTML = \`
+    <strong>ターミナルで実行してください</strong><br>
+    <div style="margin-top:8px;background:#0d1117;border:1px solid #30363d;border-radius:4px;padding:10px;display:flex;align-items:center;gap:8px">
+      <code style="flex:1;font-size:.75rem;color:#58a6ff;word-break:break-all">\${oneliner}</code>
+      <button onclick="navigator.clipboard.writeText(\`\${oneliner}\`);this.textContent='✓コピー済み'" style="background:#21262d;border:1px solid #30363d;color:#8b949e;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:.75rem;white-space:nowrap">コピー</button>
+    </div>
+    <div style="margin-top:8px;color:#8b949e;font-size:.75rem">
+      id_ed25519 の場合は <code>-f ~/.ssh/id_ed25519</code> に変更してください
+    </div>
+  \`;
 }
 
 async function verify() {
