@@ -10,7 +10,7 @@ export const imageServeRouter = Router();
 const AGORA_ROOT = path.resolve(__dirname, '../../..');
 const CASTS_DIR = '/srv/shared/metroon/data/casts';
 const GEN_SCRIPT = path.join(__dirname, 'gen.js');
-const OUT_DIR = process.env.AGORA_GEN_OUT || path.join(AGORA_ROOT, 'generated');
+const OUT_DIR = process.env.AGORA_GEN_OUT || '/srv/shared/metroon/private/system/generated';
 const KEEP_HOURS = parseInt(process.env.AGORA_GEN_KEEP_HOURS || "336"); // デフォルト2週間
 const SCENES_DIR = '/srv/shared/metroon/data/uploads/scenes';
 if (!fs.existsSync(SCENES_DIR)) fs.mkdirSync(SCENES_DIR, { recursive: true });
@@ -156,9 +156,13 @@ imageGenRouter.post('/generate', (req, res) => {
   });
 });
 
-// GET /api/image_gen/img/:filename — 生成画像配信（認証不要）
+// GET /api/image_gen/img/:filename — 生成画像配信（新旧両パス対応）
+const OLD_OUT_DIR = path.join(AGORA_ROOT, 'generated');
 imageServeRouter.get('/img/:filename', (req, res) => {
-  const filePath = path.join(OUT_DIR, path.basename(req.params.filename));
-  if (!fs.existsSync(filePath)) return res.status(404).end();
+  const base = path.basename(req.params.filename);
+  const newPath = path.join(OUT_DIR, base);
+  const oldPath = path.join(OLD_OUT_DIR, base);
+  const filePath = fs.existsSync(newPath) ? newPath : fs.existsSync(oldPath) ? oldPath : null;
+  if (!filePath) return res.status(404).end();
   res.sendFile(filePath);
 });

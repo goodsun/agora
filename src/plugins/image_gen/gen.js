@@ -67,6 +67,8 @@ async function genWithRefs(refList) {
     prompt: fullPrompt.slice(0, 200),
     refs: refList.map(r => ({ label: r.label, name: r.name, type: r.type, sizeKB: Math.round(fs.statSync(r.path).size / 1024) })),
     generationConfig,
+    outputPath: outPath,
+    outputUrl: '/api/image_gen/img/' + require('path').basename(outPath),
   };
   console.log('[API REQUEST]', JSON.stringify(logPayload));
   // ログファイルに追記
