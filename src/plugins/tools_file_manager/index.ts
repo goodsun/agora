@@ -1,8 +1,9 @@
-import express, { Router } from 'express';
+import express, { Router, Request, Response, NextFunction } from 'express';
 import path from 'path';
 import fs from 'fs';
 import sharp from 'sharp';
 import multer from 'multer';
+import { verifySessionToken } from '../auth';
 
 export const fileManagerRouter = Router();  // /api/file_manager/
 export const fileManagerUIRouter = Router(); // /tools/file_manager/
@@ -87,15 +88,39 @@ fileManagerRouter.get('/search', (_req, res) => {
 });
 
 // API: GET /api/file_manager/read — ファイル内容取得（テキスト・md・json のみ、エージェント向け）
-fileManagerRouter.get('/read', (req, res) => {
+fileManagerRouter.get('/read', (req: Request, res: Response) => {
   const p = String(req.query.path || '');
   if (!p || !fs.existsSync(p) || !fs.statSync(p).isFile()) return res.status(404).json({ error: 'not found' });
   try { if (!isSafePath(p)) return res.status(403).json({ error: 'forbidden' }); } catch { return res.status(403).json({ error: 'forbidden' }); }
+
+  // private/ ディレクトリへのアクセスは認証必須
+  const isPrivate = p.includes('/private/');
+  if (isPrivate) {
+    const cookieToken = (req as any).cookies?.agora_session;
+    const bearerToken = req.headers.authorization?.replace('Bearer ', '');
+    const token = cookieToken || bearerToken;
+    if (!token) return res.status(401).json({ error: 'authentication required', hint: 'Visit /tools/auth/ to sign in' });
+    const session = verifySessionToken(token);
+    if (!session) return res.status(401).json({ error: 'invalid or expired token' });
+
+    // private/<id>/ は対応するエージェントまたはadminのみ
+    const privateMatch = p.match(/\/private\/([^/]+)\//);
+    if (privateMatch && privateMatch[1] !== 'shared') {
+      const targetId = privateMatch[1];
+      const isAdmin = session.roles.includes('admin');
+      const isOwner = session.agent_id === targetId;
+      const hasAccess = session.private_access?.includes('*') || session.private_access?.includes(targetId);
+      if (!isAdmin && !isOwner && !hasAccess) {
+        return res.status(403).json({ error: `access denied to private/${targetId}/`, agent: session.agent_id });
+      }
+    }
+  }
+
   const ext = path.extname(p).toLowerCase();
   if (IMAGE_EXTS.has(ext)) return res.status(400).json({ error: 'use /file for images' });
   if (!ALLOWED_EXTS.has(ext)) return res.status(403).json({ error: 'extension not allowed' });
   const content = fs.readFileSync(p, 'utf-8');
-  res.json({ path: p, content });
+  res.json({ path: p, content, private: isPrivate });
 });
 
 // API: GET /api/file_manager/file
