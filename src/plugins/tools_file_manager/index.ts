@@ -13,7 +13,7 @@ const SEARCH_ROOTS: string[] = (process.env.FILE_MANAGER_ROOTS || '/srv/agora,/s
 
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']);
 const MD_EXTS = new Set(['.md']);
-const JSON_EXTS = new Set(['.json']);
+const JSON_EXTS = new Set(['.json', '.jsonl']);
 const ALLOWED_EXTS = new Set([...IMAGE_EXTS, ...MD_EXTS, ...JSON_EXTS]);
 
 function isSafePath(p: string): boolean {
