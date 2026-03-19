@@ -17,7 +17,13 @@ function requireApiKey(req: express.Request, res: express.Response, next: expres
   const validKey = process.env.AGORA_API_KEY;
   if (!validKey) return res.status(500).json({ error: 'server_misconfigured', message: 'AGORA_API_KEY not set' });
   if (key === validKey) return next();
-  res.status(401).json({ error: 'unauthorized', message: 'X-API-Key header required' });
+  // APIキーなしでも認証済みセッション（Cookie or Bearer）があればOK
+  const { verifySessionToken } = require('./plugins/auth');
+  const cookieToken = (req as any).cookies?.agora_session;
+  const bearerToken = req.headers.authorization?.replace('Bearer ', '');
+  const token = cookieToken || bearerToken;
+  if (token && verifySessionToken(token)) return next();
+  res.status(401).json({ error: 'unauthorized', message: 'X-API-Key header or valid session required. Login at /tools/auth/' });
 }
 
 // ── health check ──

@@ -131,7 +131,7 @@ toolsImageGenRouter.get('/', (_req, res) => {
   </header>
   <div class="main-content">
 
-  <div class="api-key-row">
+  <div class="api-key-row" id="apiKeyRow">
     <i class="fa fa-key lock"></i>
     <input type="password" id="apiKey" placeholder="X-API-Key を入力">
   </div>
@@ -334,10 +334,11 @@ async function uploadBg(input) {
   document.getElementById('bgStatus').textContent = 'アップロード中...';
   const fd = new FormData();
   fd.append('file', file);
+  const headers = apiKey !== '__session__' ? { 'X-API-Key': apiKey } : {};
   try {
     const res = await fetch('/api/image_gen/upload_bg', {
       method: 'POST',
-      headers: { 'X-API-Key': apiKey },
+      headers,
       body: fd
     });
     const data = await res.json();
@@ -382,6 +383,9 @@ async function generate() {
   if (!prompt) { alert('プロンプトを入力してください'); return; }
   const apiKey = document.getElementById('apiKey').value.trim();
   if (!apiKey) { alert('API Keyを入力してください'); return; }
+  const authHeaders = apiKey !== '__session__'
+    ? { 'Content-Type': 'application/json', 'X-API-Key': apiKey }
+    : { 'Content-Type': 'application/json' };
 
   const btn = document.getElementById('genBtn');
   const spinner = document.getElementById('spinner');
@@ -402,7 +406,7 @@ async function generate() {
   try {
     const res = await fetch('/api/image_gen/generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+      headers: authHeaders,
       body: JSON.stringify({
         prompt: finalPrompt,
         cast_refs: castRefs,
@@ -484,6 +488,21 @@ if (saved && saved.rows && saved.rows.length > 0) {
 // 変更時に自動保存
 document.addEventListener('change', saveState);
 document.getElementById('castRows').addEventListener('click', () => setTimeout(saveState, 100));
+
+// ログイン済みならAPIキー入力欄を非表示
+(async () => {
+  try {
+    const r = await fetch('/api/auth/agents'); // セッション確認の代わりに認証確認
+    // Cookieがあれば /api/file_manager/files にprivateが含まれるかで判定
+    const fRes = await fetch('/api/file_manager/files');
+    const files = await fRes.json();
+    const hasPrivate = files.some(f => f.path.includes('/private/'));
+    if (hasPrivate) {
+      document.getElementById('apiKeyRow').style.display = 'none';
+      document.getElementById('apiKey').value = '__session__'; // ダミー値でバリデーション回避
+    }
+  } catch {}
+})();
 </script>
 </div>
 </body>
