@@ -300,6 +300,11 @@ function openByFilteredIdx(i) {
 
 async function openFile(idx) {
   const f = allFiles[idx];
+  // URLを書き換え（ブラウザの戻る/進む・共有に対応）
+  const newUrl = new URL(location.href);
+  newUrl.searchParams.set('path', f.path);
+  history.pushState({ path: f.path, idx }, '', newUrl.toString());
+
   document.getElementById('placeholder').style.display = 'none';
   document.getElementById('filepath-bar').style.display = 'flex';
   renderBreadcrumb(f.path);
@@ -567,6 +572,19 @@ function moveCursor(dir) {
 }
 
 init();
+
+// ブラウザの戻る/進むボタン対応
+window.addEventListener('popstate', (e) => {
+  if (e.state?.path) {
+    const idx = allFiles.findIndex(f => f.path === e.state.path);
+    if (idx >= 0) openFile(idx);
+    else openFileByPath(e.state.path);
+  } else {
+    // ファイル未選択状態に戻す
+    document.getElementById('placeholder').style.display = 'flex';
+    document.getElementById('filepath-bar').style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
