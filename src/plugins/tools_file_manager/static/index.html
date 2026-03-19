@@ -176,6 +176,47 @@ async function init() {
   const res = await fetch('/api/file_manager/files');
   allFiles = await res.json();
   renderList();
+
+  // URLパラメータ ?path=... でファイルを直接開く
+  const urlPath = new URLSearchParams(location.search).get('path');
+  if (urlPath) {
+    const idx = allFiles.findIndex(f => f.path === urlPath);
+    if (idx >= 0) {
+      openFile(idx);
+    } else {
+      // ファイル一覧にない場合（private等）は直接readAPIを呼ぶ
+      openFileByPath(urlPath);
+    }
+  }
+}
+
+async function openFileByPath(filePath) {
+  try {
+    const res = await fetch('/api/file_manager/read?path=' + encodeURIComponent(filePath));
+    if (res.status === 401) {
+      showError('このファイルにアクセスするにはログインが必要です', '/tools/auth/');
+      return;
+    }
+    if (res.status === 403) {
+      showError('アクセス権限がありません');
+      return;
+    }
+    const d = await res.json();
+    const ext = filePath.split('.').pop().toLowerCase();
+    const type = ['jpg','jpeg','png','gif','webp','svg'].includes(ext) ? 'image' : ext === 'json' ? 'json' : 'md';
+    // ファイル一覧にダミーエントリを追加して openFile と同じ描画を使う
+    const dummy = { path: filePath, name: filePath.split('/').pop(), type, dir: filePath.split('/').slice(0,-1).join('/'), size: 0, mtime: 0 };
+    allFiles.push(dummy);
+    openFile(allFiles.length - 1);
+  } catch(e) {
+    showError('ファイルを開けませんでした: ' + e.message);
+  }
+}
+
+function showError(msg, link) {
+  const viewer = document.getElementById('viewer');
+  viewer.innerHTML = '<div style="padding:32px;color:#f85149;font-size:.9rem"><i class="fa fa-circle-xmark"></i> ' + msg +
+    (link ? ' <a href="' + link + '" style="color:#58a6ff;margin-left:8px">ログイン →</a>' : '') + '</div>';
 }
 
 function setFilter(f, btn) {
