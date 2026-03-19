@@ -217,6 +217,13 @@ app.get('/', (_req, res) => {
           <div class="tdesc">サービス一覧・稼働状況</div>
         </div>
       </a>
+      <a href="/tools/auth/" class="tool-card">
+        <span class="tool-icon"><i class="fa-solid fa-shield-halved"></i></span>
+        <div class="tool-info">
+          <div class="tname">auth</div>
+          <div class="tdesc">公開鍵署名による市民認証</div>
+        </div>
+      </a>
     </div>
 
     <div class="section-label">API</div>
@@ -284,6 +291,9 @@ app.use('/tools/proposals', proposalsRouter);
 
 import { router as servicesRouter } from './plugins/tools_services';
 app.use(servicesRouter);
+
+import { router as authRouter } from './plugins/auth';
+app.use(authRouter);
 
 // ── file_manager API + UI ──
 import { fileManagerRouter, fileManagerUIRouter } from './plugins/tools_file_manager';
