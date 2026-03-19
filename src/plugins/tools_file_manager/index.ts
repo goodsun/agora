@@ -125,7 +125,11 @@ fileManagerRouter.get('/read', (req: Request, res: Response) => {
       const isAdmin = session.roles.includes('admin');
       const isOwner = session.agent_id === targetId;
       const hasAccess = session.private_access?.includes('*') || session.private_access?.includes(targetId);
-      if (!isAdmin && !isOwner && !hasAccess) {
+      // system/ は admin + gatekeeper + auditor のみ
+      if (targetId === 'system') {
+        const canReadSystem = isAdmin || session.roles.includes('gatekeeper') || session.roles.includes('auditor');
+        if (!canReadSystem) return res.status(403).json({ error: 'access denied to private/system/', agent: session.agent_id });
+      } else if (!isAdmin && !isOwner && !hasAccess) {
         return res.status(403).json({ error: `access denied to private/${targetId}/`, agent: session.agent_id });
       }
     }

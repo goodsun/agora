@@ -61,12 +61,22 @@ async function genWithRefs(refList) {
   };
   // APIリクエストログ（画像データはサイズのみ記録）
   const logPayload = {
+    ts: new Date().toISOString(),
     model, aspect, imageAspect,
     promptLength: fullPrompt.length,
+    prompt: fullPrompt.slice(0, 200),
     refs: refList.map(r => ({ label: r.label, name: r.name, type: r.type, sizeKB: Math.round(fs.statSync(r.path).size / 1024) })),
     generationConfig,
   };
   console.log('[API REQUEST]', JSON.stringify(logPayload));
+  // ログファイルに追記
+  const logDir = '/srv/shared/metroon/private/system/logs/api';
+  try {
+    if (fs.existsSync(logDir)) {
+      const logFile = logDir + '/' + new Date().toISOString().slice(0,10) + '.jsonl';
+      fs.appendFileSync(logFile, JSON.stringify(logPayload) + '\n');
+    }
+  } catch(e) { console.warn('[LOG WRITE FAILED]', e.message); }
 
   const data = await httpsPost(url, payload);
   if (data.error) { console.error('[API ERROR]', JSON.stringify(data.error)); process.exit(1); }
