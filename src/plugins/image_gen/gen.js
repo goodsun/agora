@@ -48,14 +48,17 @@ async function genWithRefs(refList) {
   const refNote = refList.length > 0 ? ' Use the reference images as character design bases. Maintain each character visual style.' : '';
   const fullPrompt = [prompt, refNote, aspectPrompt].filter(Boolean).join(' ');
   parts.push({ text: fullPrompt });
+  // imageConfig.aspectRatio: '1:1','16:9','9:16','4:3','3:4' etc. をそのまま渡す
+  const VALID_ASPECTS = ['1:1','1:4','1:8','2:3','3:2','3:4','4:1','4:3','4:5','5:4','8:1','9:16','16:9','21:9'];
+  const imageAspect = VALID_ASPECTS.includes(aspect) ? aspect : null;
+  const generationConfig = {
+    responseModalities: ['image', 'text'],
+    ...(imageAspect ? { imageConfig: { aspectRatio: imageAspect } } : {}),
+  };
   const payload = {
     contents: [{ parts }],
-    generationConfig: {
-      responseModalities: ['image', 'text'],
-    }
+    generationConfig,
   };
-  // aspect ratioをGemini generate_content APIで指定する場合はプロンプトに含めるのが現状の方法
-  // (generationConfig.aspectRatio は imagen系のみサポート)
   const data = await httpsPost(url, payload);
   if (data.error) { console.error(JSON.stringify(data.error)); process.exit(1); }
   const resParts = data.candidates?.[0]?.content?.parts ?? [];
