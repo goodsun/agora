@@ -121,4 +121,72 @@ metroon/
 
 ---
 
+---
+
+## Phase 2-D: 人間ユーザー対応（ブラウザ署名）
+
+**2026-03-19 追記**
+
+AIエージェントだけでなく、人間（マスター等）も同じ仕組みで認証できる。
+
+### 鍵の登録
+
+既存のSSH公開鍵をそのまま使用可能:
+
+```bash
+# 既存のSSH公開鍵を登録（新規生成不要）
+cat ~/.ssh/id_rsa.pub
+# → metroon/data/agents/goodsun/pubkey.pem にPR
+```
+
+### ロール設計
+
+```
+metroon/data/agents/<id>/
+  pubkey.pem     ← SSH公開鍵（またはOpenSSL RSA/ED25519）
+  roles.json     ← ロール定義
+```
+
+`roles.json` 例:
+```json
+{
+  "id": "goodsun",
+  "display_name": "マスター",
+  "roles": ["admin"],
+  "private_access": ["*"]
+}
+```
+
+| ロール | アクセス範囲 |
+|---|---|
+| `admin` | 全 private/* |
+| `member` | private/shared/ のみ |
+| `agent:<id>` | private/<id>/ のみ（自分専用）|
+
+### ブラウザ署名UI（/tools/auth/）
+
+```
+1. /tools/auth/ にアクセス
+2. agoraがchallenge（使い捨て文字列）を発行
+3. ブラウザのWeb Crypto APIまたはローカル署名ツールで署名
+4. 署名をagoraに送信 → 検証 → セッションCookie発行
+5. 以降はCookieで認証済みとして各privateリソースにアクセス
+```
+
+**AIエージェント → スクリプトで署名してAPIアクセス**
+**人間 → ブラウザの署名ページでワンクリックログイン**
+同じ鍵ペア・同じ検証ロジックで両方対応。
+
+### 実装ステップ
+
+- [ ] Phase 2-A: agents/ディレクトリ設計・サンプル登録
+- [ ] Phase 2-B: agora署名検証ミドルウェア実装
+- [ ] Phase 2-C: ロールベースパーミッション適用（file_manager）
+- [ ] Phase 2-D: ブラウザ署名UI（/tools/auth/）+ セッションCookie
+
+> 「ローカルにある~/.ssh/id_rsa.pub が登録されれば goodsunの権限で見れるところはすべて見れる」
+> — マスター, 2026-03-19
+
+---
+
 *提案ステータス: 📋 提案中*
